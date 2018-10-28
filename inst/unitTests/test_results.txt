@@ -1,0 +1,48 @@
+RUNIT TEST PROTOCOL -- Fri Oct 19 06:02:18 2018 
+*********************************************** 
+Number of test functions: 27 
+Number of errors: 0 
+Number of failures: 0 
+
+ 
+1 Test Suite : 
+PMwR - 27 test functions, 0 errors, 0 failures
+
+
+
+Details 
+*************************** 
+Test Suite: PMwR 
+Test function regexp: ^test.+ 
+Test file regexp: ut_.*[.]R$ 
+Involved directory: 
+~/Packages/PMwR/inst/unitTests 
+--------------------------- 
+Test file: /home/es19/Packages/PMwR/inst/unitTests/ut_PMwR.R 
+test..pl_stats: (11 checks) ... OK (0 seconds)
+test.as.journal: (3 checks) ... OK (0.01 seconds)
+test.btest: (52 checks) ... OK (0.07 seconds)
+test.btest_NA: (4 checks) ... OK (0 seconds)
+test.btest_position: (40 checks) ... OK (0.05 seconds)
+test.btest_tc: (2 checks) ... OK (0 seconds)
+test.div_adjust: (10 checks) ... OK (0 seconds)
+test.is_valid_ISIN: (2 checks) ... OK (0 seconds)
+test.journal: (33 checks) ... OK (0.01 seconds)
+test.journal.all.equal: (3 checks) ... OK (0 seconds)
+test.NAVseries: (20 checks) ... OK (0.01 seconds)
+test.NAVseries.window: (2 checks) ... OK (0 seconds)
+test.pl: (56 checks) ... OK (0.02 seconds)
+test.pl.volume: (6 checks) ... OK (0 seconds)
+test.pl.vprice: (42 checks) ... OK (0.01 seconds)
+test.position: (16 checks) ... OK (0 seconds)
+test.pricetable: (11 checks) ... OK (0 seconds)
+test.quote32: (10 checks) ... OK (0 seconds)
+test.rebalance: (23 checks) ... OK (0.01 seconds)
+test.replace_weight: (1 checks) ... OK (0 seconds)
+test.returns: (56 checks) ... OK (0.03 seconds)
+test.returns.p_returns_monthly: (6 checks) ... OK (0 seconds)
+test.scale1: (21 checks) ... OK (0 seconds)
+test.split_adjust: (10 checks) ... OK (0 seconds)
+test.split_trades: (5 checks) ... OK (0 seconds)
+test.streaks: (0 checks) ... OK (0 seconds)
+test.unit_prices: (1 checks) ... OK (0.01 seconds)

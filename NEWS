@@ -1,0 +1,250 @@
+v0.10-0  (2018-10-19)
+
+  o btest: support automatic computation of
+    variations, both serially and in parallel.  See new
+    arguments 'variations', 'variations.settings'
+    and 'replications'. See some examples at
+    http://enricoschumann.net/notes/parallel-backtests.html
+
+  o new generic function 'streaks' with methods for
+    zoo, NAVseries and numeric vectors
+
+  o new vignette on 'drawdowns and streaks'
+
+  o pl: In several cases in which profit/loss was set
+    to NA, it now defaults (more appropriately) to 0.
+    For instance, with a custom timestamp the
+    realised/unrealised profit/loss before the first
+    trade is now 0, not NA.
+
+  o quote32: the function now also recognises a
+    colon (:) as a separator. The function can now parse
+    more variations; see examples at
+    http://enricoschumann.net/notes/treasury-bond-quotes.html
+
+  o instrument: new replacement method
+    `instrument<-.journal`
+
+  o drawdowns: new method for NAVseries
+
+  o valuation.position method is now exported (though
+    still experimental)
+
+  o pl.btest: fixed passing of additional arguments
+
+  o returns: argument 'period' may also be 'hourly'
+    
+  o scale1: argument 'when' may also be 'last'
+  
+  o various documentation updates/fixes; see the
+    ChangeLog for all details. The manual at
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
+    has also been updated.
+
+v0.9-0  (2018-06-09)
+
+  o summary.NAVseries: argument 'monthly' has been
+    renamed:
+
+	monthly   =>   monthly.vol
+
+  o summary.NAVseries: new argument 'assume.daily',
+    with default FALSE; when TRUE, numeric
+    timestamps are considered daily data, e.g. for
+    annualising returns
+  
+  o NAVseries: add a 'window' method
+    
+  o NAVseries: summary now includes recovery from
+    drawdown
+
+  o journal: add an 'all.equal' method
+
+  o btest: new argument 'include.timestamp', with
+    default TRUE
+
+  o returns: for portfolio returns, if a timestamp
+    is specified, 'rebalance.when' is matched
+    against this timestamp (e.g., 'rebalance.when'
+    may be specified as Date when the timestamp is
+    of class Date)
+
+v0.8-0  (2018-04-30)
+
+  o drawdowns: new generic function with methods for
+    zoo and numeric vectors
+
+  o plot_trading_hours: improved support for daily
+    series (interval becomes "1 day", etc.)
+
+  o pl: new argument 'do.sum'; if TRUE, P/L across
+    instruments is summed
+
+  o pl: new argument 'pl.only'; if TRUE, return P/L as
+    a numeric vector
+
+  o btest: if a timestamp of class Date or POSIXct is
+    specified, burnin 'b' may be an actual timestamp
+
+  o rebalance: new argument 'current.weights' with
+    default FALSE; if TRUE, the current portfolio is
+    assumed to be a vector of weights
+
+  o returns: add method for as.data.frame for
+    holding-period returns
+
+  o the manual has been substantially revised. See
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
+
+v0.7-0  (2018-01-01)
+
+  o scale1: objects that are modified by 'scale1' gain
+    an attribute "scale1_origin", which provides the
+    timestamp at which scaling starts
+
+  o btest: the handling of argument 'lag' has been
+    fixed (the argument had been ignored in some
+    situations)
+
+  o quote32: the function now also recognises a
+    colon (:) as a separator
+
+  o pl: new method for data frames
+
+  o New vignettes: "Computing returns", "Treasury
+    Quotes with 1/32 Fractions" and "Profit/Loss for
+    Open Positions"
+
+v0.6-0  (2017-11-16)
+
+  o btest: two arguments have been renamed
+
+	tradeOnOpen      =>  trade.at.open
+	assignInGlobals  =>  Globals
+
+  o plot_trading_hours: two arguments have been renamed
+
+	excludeWeekends  =>  exclude.weekends
+	do.plotAxis      =>  do.plot.axis
+
+  o Function 'isValidISIN' is no longer available; use
+    the drop-in replacement 'is_valid_ISIN' instead.
+
+  o Byte-compilation is now on by default.
+
+  o New vignette 'FinTeX'.
+
+  o New datasets DAX and REXP.
+
+  o New generic function instrument, also for
+    replacement.
+
+  o NAVseries: new method 'toLatex.summary.NAVseries';
+    see the vignette for examples.
+
+  o pricetable: the function is now a generic, with a
+    default and a zoo method. Methods for pricetable
+    have been added (print, `[`, as.matrix).
+
+  o quote32: the function now recognises both a hyphen
+    (-) or single quote (') as a separator
+
+  o A more-comprehensive list of changes is available
+    in the ChangeLog:
+    http://enricoschumann.net/R/packages/PMwR/ChangeLog
+
+v0.5-0  (2017-06-23)
+
+  o A number of functions have been renamed:
+
+      isValidISIN      => is_valid_ISIN
+      closeOnFirst     => close_on_first
+      plotTradingHours => plot_trading_hours
+      scaleToUnity     => scale_to_unity
+      scaleTrades      => scale_trades
+      splitTrades      => split_trades
+      twExposure       => tw_exposure
+
+    For the time being, the old functions can still be
+    called with
+
+      PMwR:::<old-fun-name>
+
+    but the old names shall be removed in a future
+    version.
+
+  o New 'as.matrix' method for monthly holding-period
+    returns, which places returns into a numeric matrix
+    with years in rows and months in columns. For other
+    holding periods, as.matrix is called on the raw
+    numeric data.
+
+  o returns: argument 'period' may also be 'quarterly'
+    or a single year, such as "2007"
+
+  o btest: 'do.signal' and 'do.rebalance' can also be
+    the string 'lastofquarter' to rebalance on last day
+    of quarter; or 'firstofquarter' to rebalance on
+    first day of quarter
+
+  o A more-comprehensive list of changes is available
+    in the ChangeLog:
+    http://enricoschumann.net/R/packages/PMwR/ChangeLog
+
+v0.4-0  (2017-02-07)
+
+  o New functions 'unit_prices', for computing
+    time-weighted returns, and 'rc', for computing
+    return contributions.
+
+  o New helper functions '.expand' and '.tree', for
+    displaying account hierachies.
+
+  o Various new methods: 'as.data.frame.position',
+    'summary.journal', 'as.zoo.position', 'pl.btest',
+    'toOrg.journal'.
+
+  o Support for (some) arithmetic operations on
+    'position' and 'quote32' objects.
+
+  o Updated manual chapter on computing returns:
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:returns
+
+  o Updated manual chapter on backtesting:
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:backtesting
+
+v0.3-4  (2016-06-13)
+
+  o Moved function 'runStats' to a separate package 'runStats'
+    http://enricoschumann.net/R/packages/runStats/ .
+    The PMwR package contains only R code now, so no
+    special tools are required for installing from source.
+
+  o There is a public Git repository at
+    https://github.com/enricoschumann/PMwR
+
+v0.1-96  (2016-03-13)
+
+  o A draft of the manual chapter on computing profit
+    and loss is available:
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:pl
+
+v0.1-90  (2016-02-25)
+
+  o A draft of the manual chapter on scaling series is
+    available:
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:scale
+
+v0.1-89  (2016-02-19)
+
+  o A draft of the manual chapter on computing returns
+    is available:
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:returns
+
+v0.1-81  (2015-12-08)
+
+  o The PMwR package provides utilities for backtesting
+    investment and trading strategies, computing
+    profit-and-loss and returns, reporting, and more.
+    The package is still under heavy development.
+    Please see the ChangeLog for updates.
