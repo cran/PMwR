@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-18  Enrico Schumann
+## Copyright (C) 2008-19  Enrico Schumann
 
 returns <- function(x, ...)
     UseMethod("returns")
@@ -13,18 +13,19 @@ returns.default <- function(x, t = NULL, period = NULL,
 
     if (!is.null(position)) {
         position <- NULL
-        warning("time-weighted returns not supported, so position is ignored")
+        warning("time-weighted returns not supported, ",
+                "so position is ignored")
     }
 
     ## if (is.null(period) && is.null(rebalance.when))
     ##     t <- NULL
-    
+
     if (is.unsorted(t)) {  ## is.unsorted(NULL) == FALSE
         idx <- order(t)
         t <- t[idx]
         x <- x[idx]
     }
-        
+
     if (is.character(rebalance.when)) {
         rebalance.when <- tolower(rebalance.when)
         if (rebalance.when == "endofmonth")
@@ -42,7 +43,7 @@ returns.default <- function(x, t = NULL, period = NULL,
         if (any(is.na(ii)))
             warning(sQuote("rebalance.when") ,
                     " does not match timestamp")
-        rebalance.when <- ii[!is.na(ii)]        
+        rebalance.when <- ii[!is.na(ii)]
     }
 
     if (is.null(t) &&
@@ -193,6 +194,7 @@ twReturns <- function(price, position, pad = NULL) {
 ## not exported
 pReturns <- function(x, t, period, complete.first = TRUE, pad = NULL) {
     ## TODO add also: 'previous month' and pattern 'YYYY-?MM'
+    ## TODO add also: 'ytm'
 
     x <- as.matrix(x)
     if (!is.null(colnames(x)))
@@ -201,7 +203,21 @@ pReturns <- function(x, t, period, complete.first = TRUE, pad = NULL) {
         instr <- NULL
     nc <- ncol(x)
     period <- tolower(period)
-    if (grepl("^ann", period, ignore.case = TRUE)) {
+    if ((best <- grepl("best", period, ignore.case = TRUE)) ||
+                 grepl("worst", period, ignore.case = TRUE)) {
+        
+        if (grepl("year", period, ignore.case = TRUE)) {
+            
+        } else if (grepl("quarter", period, ignore.case = TRUE)) {
+            
+        } else if (grepl("month",   period, ignore.case = TRUE)) {
+            
+        } else if (grepl("day",     period, ignore.case = TRUE)) {
+            
+        } else if (grepl("hour",    period, ignore.case = TRUE)) {
+
+        }     
+    } else if (grepl("^ann", period, ignore.case = TRUE)) {
         if (!is.null(pad))
             warning(sQuote("pad"), " is ignored")
         force <- grepl("!$", period)
@@ -505,19 +521,29 @@ toLatex.p_returns <- function(object, ..., year.rows = TRUE,
                               ytd = "YTD", month.names = NULL, eol = "\\\\",
                               stand.alone = FALSE) {
 
+    stop("currently only supported for period ", sQuote("month"))
+}
+
+toLatex.p_returns_monthly <- function(object, ...,
+                                      year.rows = TRUE,
+                                      ytd = "YTD", month.names = NULL,
+                                      eol = "\\\\",
+                                      include.colnames = TRUE,
+                                      include.rownames = TRUE,
+                                      stand.alone = FALSE) {
+
     period <- attr(object, "period")
     timestamp <- attr(object, "t")
 
-    if (grepl("month(ly)?", period, ignore.case = TRUE)) {
-        if (year.rows)
-            mt <- .mtab(object, timestamp, ytd = ytd, month.names = month.names, ...)
-        else
-            mt <- t(.mtab(object, timestamp, ytd = ytd, month.names = month.names, ...))
-    } else {
-        stop("currently only supported for period ", sQuote("month"))
-    }
-    mt <- rbind(colnames(mt), mt)
-    mt <- cbind(rownames(mt), mt)
+    if (year.rows)
+        mt <-   .mtab(object, timestamp, ytd = ytd, month.names = month.names, ...)
+    else
+        mt <- t(.mtab(object, timestamp, ytd = ytd, month.names = month.names, ...))
+
+    if (include.colnames)
+        mt <- rbind(colnames(mt), mt)
+    if (include.rownames)
+        mt <- cbind(rownames(mt), mt)
     mt <- paste(apply(mt, 1, function(x) paste(x, collapse = "&")), eol)
     class(mt) <- "Latex"
     mt
@@ -626,46 +652,96 @@ toText.p_returns <- function(x, ..., year.rows = TRUE,
 }
 
 ## not exported
-returns_rebalance <- function(prices, weights, when = NULL, pad = NULL) {
+returns_rebalance <- function(prices, weights,
+                              when = NULL, pad = NULL) {
+
+    prices <- as.matrix(prices)
     nr <- nrow(prices)
-
-    if (is.null(dim(prices)))
-        stop("prices needs to be a matrix")
-
+    nc <- ncol(prices)
     if (nr < 2L)
-        stop("less than 2 rows in prices: cannot compute returns")
+        stop("fewer than two price observations")
 
     if (is.null(dim(weights)) && is.null(when)) {
         ## TODO faster implementation?
     }
 
-    if (is.null(dim(weights)))
-        weights <- array(1, dim = c(nr, 1)) %*% weights
-
-    if (dim(weights)[2L] != ncol(prices))
-        warning("length of weights does not match number of price series")
-
+    ## when: must become a logical vector of
+    ##       length 'nr'
     if (is.null(when) || isTRUE(when))
         when <- rep(TRUE, nr)
-
-    if (is.numeric(when)) { ## cases such as '1,4,12,23,...'
+    else if (identical(when, FALSE))
+        when <- rep(FALSE, nr)
+    else if (is.numeric(when)) {
+        ## cases such as '1, 4, 12, 23, ...'
+        when <- unique(when)
         tmp <- logical(nr)
         tmp[round(when)] <- TRUE
         when <- tmp
     }
-    val <- numeric(nr)
+
+    ## weights/prices:
+    ## do not touch weights if it has as many rows as prices
+
+    if (nc == 1L) {
+        ## prices == single column.
+        ## weights is made into a column vector,
+        ## irrespective of of shape (no dim, row,
+        ## or column)
+        dim(weights) <- c(length(weights), 1L)
+    } else {
+        ## prices has more than one column.
+        ## if weights has as many elements as assets (nc),
+        ## make it a row vector, irrespective of of shape
+        ## (no dim, row, or column)
+        if (length(weights) == nc) {
+            dim(weights) <- c(1L, nc)
+            tmp <- rep(weights, each = sum(when))
+            dim(tmp) <- c(sum(when), nc)
+            weights <- tmp
+        }
+    }
+
+    if (dim(weights)[2L] != nc)
+        stop("weights do not match number of price series")
+
+    if (nrow(weights) < nr) {
+        tmp <- array(0, dim = c(nr, nc))
+        ## if (when[1])
+        ##     tmp[1L, ] <- weights[1L, ]
+        if (sum(when) != nrow(weights))
+            warning("rebalance.when does not match nrow(weights)")
+
+        when.n <- which(when)
+        j <- 0
+        for (i in 1L:nr) {
+            if (when[i]) {
+                j <- j+1
+                tmp[i, ] <- weights[j, ]
+            } else if (i > 1)
+                tmp[i, ] <- tmp[i-1, ]
+        }
+        weights <- tmp
+    }
+
+
+    val <- numeric(nr) + 1
     h <- ctb <- array(0, dim = dim(prices))
 
-    val[1] <- 1
-    h[1, ] <- weights[1, ]/prices[1, ]
+    if (any(when)) {
+        first <- which(when)[1L]
+        val[seq(to = first)] <- 1
+        h[first, ] <- weights[first, ]/prices[first, ]
 
-    for (i in 2:nr) {
-        val[i] <- sum(prices[i, ]*h[i - 1, ])
-        ctb[i,] <- (prices[i,]-prices[i-1,]) * h[i-1,] / val[i-1]
-        if (when[i])
-            h[i, ] <- val[i] * weights[i, ]/prices[i, ]
-        else
-            h[i, ] <- h[i - 1, ]
+        if (first < nr)
+            for (i in (first+1):nr) {
+                val[i] <- sum(prices[i, ] * h[i-1, ])
+                ctb[i, ] <- (prices[i, ]-prices[i-1, ]) *
+                    h[i-1, ] / val[i-1]
+                if (when[i])
+                    h[i, ] <- val[i] * weights[i, ]/prices[i, ]
+                else
+                    h[i, ] <- h[i - 1, ]
+            }
     }
     ans <- .returns(val, pad = pad, lag = 1L)
     attr(ans, "holdings") <- h
@@ -705,97 +781,13 @@ rc <- function(R, weights, timestamp, segments = NULL) {
 }
 
 
-## TODO move to dev
-##
-## if (FALSE) {
-
-##     prices <- c(100 ,102 ,104 ,104 ,104.5 ,
-##                 2   ,2.2 ,2.4 ,2.3 ,2.5   ,
-##                 3.5 ,3   ,3.1 ,3.2 ,3.1)
-    
-##     dim(prices) <- c(5,3)
-    
-##     weights <- c(1,0,0)
-##     when <- as.logical(c(1,0,1,0,1))
-##     when <- as.logical(c(1,1,1,1,1))
-##     when <- TRUE
-    
-    
-    
-##     ## TESTS
-##     weights <- c(1,0,0)
-##     all.equal(c(returns.rebalance(prices, weights, when = when, aggregate = TRUE, pad = 0)),
-##               c(returns(prices[,1],pad=0)))
-##     weights <- c(0,1,0)
-##     all.equal(c(returns.rebalance(prices, weights, when = when, aggregate = TRUE, pad = 0)),
-##               c(returns(prices[,2],pad=0)))
-##     weights <- c(0,0,1)
-##     all.equal(c(returns.rebalance(prices, weights, when = when, aggregate = TRUE, pad = 0)),
-##               c(returns(prices[,3],pad=0)))
-##     weights <- c(.5,.4,.1)
-##     all.equal(c(returns(prices,pad=0) %*% weights),
-##               c(returns.rebalance(prices, weights, when = when, aggregate = TRUE, pad = 0)))
-    
-##     when <- as.logical(c(1,0,0,0,0))
-##     !isTRUE(all.equal(
-##          c(returns(prices,pad=0) %*% weights),
-##          c(returns.rebalance(prices, weights, when = when, aggregate = TRUE, pad = 0))))
-    
-    
-    
-##     ## not exported
-##     prices <- c(100 ,102 ,104 ,104 ,104.5 ,
-##                 2   ,2.2 ,2.4 ,2.3 ,2.5   ,
-##                 3.5 ,3   ,3.1 ,3.2 ,3.1)
-    
-##     dim(prices) <- c(5,3)
-    
-##     weights <- c(1,0,0)
-##     when <- as.logical(c(1,1,1,1,1))
-##     when <- as.logical(c(1,0,1,0,1))
-    
-##     returns_rebalance2 <- function(prices, weights, when = NULL, pad = NULL) {
-##         prices <- as.matrix(prices)
-        
-##         nr <- nrow(prices)
-##         pos <- array(NA, dim = dim(prices))
-##         ## w <- array(NA, dim = dim(prices))
-        
-##         if (is.null(when && identical(when, TRUE)))
-##             when <- seq_len(nc)
-##         else if (is.logical(when))
-##             when <- which(when)
-    
-    
-##         for (i in when)
-##             pos[i, ] <- weights / prices[i, ] ## TODO: if w is matrix, w[i, ]
-##         ## TODO na.locf
-        
-##         pos <- na.locf(pos)
-##         pos[is.na(pos)] <- 0
-##         w <- pos * prices
-##         w <- w/rowSums(w)
-        
-##         rowSums(returns(prices) * w[-nr,])
-##     }
-    
-##     returns_rebalance2(prices, weights, when = TRUE)
-##     PMwR:::returns_rebalance(prices, weights, when = TRUE)
-    
-##     require("rbenchmark")
-##     benchmark(returns_rebalance2(prices, weights, when = TRUE),
-##               PMwR:::returns_rebalance(prices, weights, when = TRUE),
-##               columns = c("test", "relative", "elapsed"), replications = 1000)
-
-    
-## }
 
 as.matrix.p_returns <- function(x, ...) {
-    
+
     if (attr(x, "period") == "monthly" && is.null(dim(x))) {
         t <- attr(x, "t")
         x <- unclass(x)
-        
+
         years <- as.numeric(format(t, "%Y"))
         mons  <- as.numeric(format(t, "%m"))
         tb <- array(NA, dim = c(length(unique(years)), 13L))

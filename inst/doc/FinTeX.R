@@ -38,39 +38,44 @@ returns(DAX, period = "annualised")
 
 
 ###################################################
-### code chunk number 6: FinTeX.Rnw:102-105
+### code chunk number 6: FinTeX.Rnw:103-106
 ###################################################
-DAX  <- summary(as.NAVseries(DAX,  title = "DAX"))
-REXP <- summary(as.NAVseries(REXP, title = "REXP"))
-toLatex(DAX, REXP, template = "%title: %return\\% \\\\")
+toLatex(summary(as.NAVseries(DAX,  title = "DAX"),
+                as.NAVseries(REXP, title = "REXP")),
+        template = "%title: %return\\% \\\\")
 
 
 ###################################################
-### code chunk number 7: FinTeX.Rnw:111-114
+### code chunk number 7: FinTeX.Rnw:112-117
 ###################################################
 tmpl <- c("Equities (%title) made %return\\%, with a drawdown of %mdd\\%;",
           "bonds (%title) returned %return\\%.")
-toLatex(DAX, REXP, template = tmpl)
+toLatex(summary(as.NAVseries(DAX,  title = "DAX"),
+                as.NAVseries(REXP, title = "REXP")),
+        template = tmpl)
 
 
 ###################################################
-### code chunk number 8: FinTeX.Rnw:118-119
+### code chunk number 8: FinTeX.Rnw:121-123
 ###################################################
-toLatex(DAX, template = "The DAX %sparkline made %return\\% during the period.")
+toLatex(summary(as.NAVseries(DAX,  title = "DAX")),
+        template = "The DAX %sparkline made %return\\% during the period.")
 
 
 ###################################################
-### code chunk number 9: FinTeX.Rnw:127-129
+### code chunk number 9: FinTeX.Rnw:131-134
 ###################################################
-toLatex(DAX, REXP,
-        template = "%title & %sparkline & %return & %volatility  \\\\" )
+toLatex(summary(as.NAVseries(DAX,  title = "DAX"),
+                as.NAVseries(REXP, title = "REXP")),
+        template = "%title & %sparkline & %return & %volatility  \\\\")
 
 
 ###################################################
-### code chunk number 10: FinTeX.Rnw:136-138 (eval = FALSE)
+### code chunk number 10: FinTeX.Rnw:141-144 (eval = FALSE)
 ###################################################
-## toLatex(DAX, REXP,
-##         template = "%title & %sparkline & %return & %volatility  \\\\" )
+## toLatex(summary(as.NAVseries(DAX,  title = "DAX"),
+##                 as.NAVseries(REXP, title = "REXP")),
+##         template = "%title & %sparkline & %return & %volatility  \\\\")
 
 
 ###################################################
@@ -84,7 +89,7 @@ str(P)
 
 
 ###################################################
-### code chunk number 12: FinTeX.Rnw:157-177
+### code chunk number 12: FinTeX.Rnw:163-179
 ###################################################
 matrixify <- function(s, cols) {
     s <- as.character(s)
@@ -94,15 +99,11 @@ matrixify <- function(s, cols) {
     s
 }
 
-
 ## make LaTeX table
-Plist <- unname(lapply(split(P, col(P)), 
-                       function(x) 
-                           summary(NAVseries(x), 
-                                   assume.daily = TRUE)))
-s <- do.call(toLatex, 
-             c(Plist, 
-               template = "%return & %volatility & %sparkline"))
+Plist <- unname(
+  lapply(split(P, col(P)), function(x) NAVseries(x)))
+s <- toLatex(do.call(summary, Plist),
+        template = "%return & %volatility & %sparkline")
 o <- order(P[nrow(P), ], decreasing = TRUE)
 s <- s[o]
 cat(toLatex(as.data.frame(matrixify(s, 3))))

@@ -1,3 +1,42 @@
+v0.11-0  (2019-04-01)
+
+  o returns: 'weights' may now also be a matrix with as
+    many rows as 'rebalance.when'. Also, rebalancing at
+    the first timestamp is no longer implied (see
+    ChangeLog entry of 2018-11-09 for details).
+
+  o position: new argument 'use.names', which allows to
+    use names/colnames as instrument information. Also,
+    matrix input is now treated specially; see examples at
+    http://enricoschumann.net/notes/computing-positions.html
+
+  o NAVseries: new argument 'drop.NA'. Also, if 'NAV'
+    inherits from 'btest', the function now calls
+    'as.NAVseries.btest'.
+
+  o summary.NAVseries: new argument 'bm' ("benchmark").
+    If set, a 'tracking.error' is computed. The summary
+    method now can handle several NAVseries as inputs,
+    which allows easier comparison of series.
+
+  o as.NAVseries.btest: method gains optional arguments
+    'instrument', 'title' and 'description'
+
+  o plot_trading_hours.R: fix axis-tick positions when
+    'label' is "days"
+
+  o functions 'scaleTrades' and 'splitTrades' have
+    finally been removed (they had not been exported
+    for a long time; see ChangeLog entry of 2017-06-23).
+    Use drop-in replacements 'scale_trades' and
+    'split_trades' instead.
+
+  o split_trades: 'price' may now be missing (in which
+    case NA is used)
+
+  o various documentation updates/fixes; see the
+    ChangeLog for all details.
+
 v0.10-0  (2018-10-19)
 
   o btest: support automatic computation of
@@ -33,9 +72,9 @@ v0.10-0  (2018-10-19)
   o pl.btest: fixed passing of additional arguments
 
   o returns: argument 'period' may also be 'hourly'
-    
+
   o scale1: argument 'when' may also be 'last'
-  
+
   o various documentation updates/fixes; see the
     ChangeLog for all details. The manual at
     http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
@@ -46,15 +85,15 @@ v0.9-0  (2018-06-09)
   o summary.NAVseries: argument 'monthly' has been
     renamed:
 
-	monthly   =>   monthly.vol
+        monthly   =>   monthly.vol
 
   o summary.NAVseries: new argument 'assume.daily',
     with default FALSE; when TRUE, numeric
     timestamps are considered daily data, e.g. for
     annualising returns
-  
+
   o NAVseries: add a 'window' method
-    
+
   o NAVseries: summary now includes recovery from
     drawdown
 
@@ -119,13 +158,13 @@ v0.6-0  (2017-11-16)
 
   o btest: two arguments have been renamed
 
-	tradeOnOpen      =>  trade.at.open
-	assignInGlobals  =>  Globals
+        tradeOnOpen      =>  trade.at.open
+        assignInGlobals  =>  Globals
 
   o plot_trading_hours: two arguments have been renamed
 
-	excludeWeekends  =>  exclude.weekends
-	do.plotAxis      =>  do.plot.axis
+        excludeWeekends  =>  exclude.weekends
+        do.plotAxis      =>  do.plot.axis
 
   o Function 'isValidISIN' is no longer available; use
     the drop-in replacement 'is_valid_ISIN' instead.
@@ -208,10 +247,10 @@ v0.4-0  (2017-02-07)
     'position' and 'quote32' objects.
 
   o Updated manual chapter on computing returns:
-    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:returns
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#computing-returns
 
   o Updated manual chapter on backtesting:
-    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:backtesting
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#backtesting
 
 v0.3-4  (2016-06-13)
 
@@ -227,19 +266,19 @@ v0.1-96  (2016-03-13)
 
   o A draft of the manual chapter on computing profit
     and loss is available:
-    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:pl
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#profit-and-loss
 
 v0.1-90  (2016-02-25)
 
   o A draft of the manual chapter on scaling series is
     available:
-    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:scale
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#scaling-series
 
 v0.1-89  (2016-02-19)
 
   o A draft of the manual chapter on computing returns
     is available:
-    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#ch:returns
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#computing-returns
 
 v0.1-81  (2015-12-08)
 

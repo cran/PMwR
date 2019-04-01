@@ -1,50 +1,56 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-18  Enrico Schumann
+## Copyright (C) 2008-19  Enrico Schumann
 
-## valuation <- function(x, ...) {
-##     UseMethod("valuation")
-## }
-## valuation.default <- function(x, ...) {
-##     do.call(x, list(...))
-## }
-## valuation.instrument <- function(x, ...,
-##                                  data = function(x, ...) list(...)) {
-
-##     do.call(x$vfun, data(x, ...))
-## }
-
-
-valuation <- function(x, ...) {
+valuation <- function(x, ...)
     UseMethod("valuation")
-}
+
 
 valuation.default <- function(x, ...) {
     force(x)
 }
+## valuation.default <- function(x, ...) {
+##     do.call(x, list(...))
+## }
 
-valuation.journal <- function(x,
-                              multiplier = 1,                          
-                              cashflow = function(x, ...) x$amount * x$price,
-                              instrument = function(x, ...) "cash",
-                              flip.sign = TRUE,
-                              ...) {
 
-    if (!is.null(names(multiplier)))
-        multiplier <- multiplier[x$instrument]
+## valuation.instrument <-
+##     function(x, ...,
+##              data = function(x, ...) list(...)) {
+##         do.call(x$vfun, data(x, ...))
+## }
 
-    istr <- if (is.null(instrument))
-                NA
-            else if (is.character(instrument))
-                instrument
-            else if (is.function(instrument))
-                instrument(x, ...)
-            else
-                as.character(instrument)
 
+valuation.journal <-
+    function(x,
+             multiplier = 1,                          
+             cashflow = function(x, ...) x$amount * x$price,
+             instrument = function(x, ...) "cash",
+             flip.sign = TRUE,
+             ...) {
+
+        if (!is.null(names(multiplier)))
+            multiplier <- multiplier[x$instrument]
+        
+        istr <- if (is.null(instrument))
+                    NA
+                else if (is.character(instrument))
+                    instrument
+                else if (is.function(instrument))
+                    instrument(x, ...)
+                else
+                    as.character(instrument)
+        
+        cf <- if (is.null(cashflow))
+                  NA
+              else if (is.numeric(cashflow))
+                  cashflow
+              else if (is.function(cashflow))
+                  cashflow(x, ...)
+        
     ans <- x
     ans$instrument <- character(length(x))
     ans$instrument[] <- istr
-    ans$amount <- cashflow(x) * multiplier
+    ans$amount <- cf * multiplier
     if (flip.sign)
         ans$amount <- ans$amount * -1    
     ans$price[] <- 1
@@ -87,12 +93,17 @@ valuation.position <- function(x, price.table, multiplier = 1,
         multiplier <- multiplier[instrument]
 
     pos <- x != 0
-    if (any(is.na(price.table[pos]))) {
-        miss <- which(is.na(price.table) & pos, TRUE)
+    miss <- which(is.na(price.table) & pos, TRUE)
+    if (nrow(miss)) {
         warning("missing prices")
-        if (verbose)
-            print(data.frame(timestamp = .timestamp(x)[miss[,1]],
-                             instrument = instrument(x)[miss[,2]]))
+        if (verbose) {
+            for (i in seq_len(ncol(x)))
+                if (any(pos[, i]) && all(miss[, i]))
+                    warning("no prices at all for ", instrument[i])
+            print(data.frame(timestamp  = .timestamp(x)[miss[, 1L]],
+                             instrument = instrument(x)[miss[, 2L]]))
+
+        }
     }
     price.table[!pos] <- 0
     ans <- as.matrix(x) * price.table

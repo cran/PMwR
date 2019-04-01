@@ -13,16 +13,19 @@
 }
 \usage{
 NAVseries(NAV, timestamp,
-          instrument = NULL, title = NULL, description = NULL)
+          instrument = NULL, title = NULL, description = NULL,
+          drop.NA = NULL)
 
 as.NAVseries(x, ...)
 
 \method{print}{NAVseries}(x, \dots )
 
-\method{summary}{NAVseries}(object, \dots, monthly.vol = TRUE, na.rm =
-    FALSE, assume.daily = FALSE)
+\method{summary}{NAVseries}(object, \dots, monthly.vol = TRUE,
+                            bm = NULL, monthly.te = TRUE,
+                            na.rm = FALSE, assume.daily = FALSE)
 
 \method{plot}{NAVseries}(x, y, \dots, xlab = "", ylab = "", type = "l")
+
 \method{window}{NAVseries}(x, start = NULL, end = NULL, \dots)
 }
 \arguments{
@@ -48,11 +51,30 @@ as.NAVseries(x, ...)
   an \code{NAVseries}
 }
 \item{\dots}{
-  further arguments
+
+  further arguments. For \code{summary}, these can be
+  \code{NAVseries}.
+
+}
+\item{drop.NA}{
+  logical
+}
+\item{bm}{
+
+  an optional NAVseries. If \code{bm} does not inherit
+  from \code{NAVseries}, \code{\link{as.NAVseries}} is
+  tried.
+
 }
 \item{monthly.vol}{
 
   if \code{TRUE} (default), volatility computations
+  are done on monthly returns
+
+}
+\item{monthly.te}{
+
+  if \code{TRUE} (default), tracking error computations
   are done on monthly returns
 
 }
@@ -92,7 +114,6 @@ as.NAVseries(x, ...)
   The summary method returns a list of the original NAVseries plus
   various statistics, such as return per year and volatility.
 
-  
 }
 \section{Note}{
 
@@ -108,15 +129,15 @@ as.NAVseries(x, ...)
 
   an \code{NAVseries}: see Details.
 
-  an \code{NAVseries} summary: a list
+  an \code{NAVseries} summary: a list of lists
 
 }
 \references{
 
-  Schumann, E. (2018) \emph{Portfolio Management with
+  Schumann, E. (2019) \emph{Portfolio Management with
   \R}. \url{http://enricoschumann.net/PMwR/}
 
-} 
+}
 \author{
 Enrico Schumann <es@enricoschumann.net>
 }

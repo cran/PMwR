@@ -73,9 +73,149 @@ test.position <- function() {
 
 }
 
+test.position_named <- function() {
+
+    amount <- c(1, 1, 1)
+    checkEquals(position(amount),
+                structure(3,
+                          .Dim = c(1L, 1L),
+                          .Dimnames = list("", ""),
+                          timestamp = NA,
+                          instrument = NA_character_,
+                          class = "position"))
+
+    instrument <- c("A", "A", "B")
+    checkEquals(position(amount = amount, instrument = instrument),
+                structure(c(2, 1),
+                          .Dim = 1:2,
+                          .Dimnames = list("", c("A", "B" )),
+                          timestamp = NA,
+                          instrument = c("A", "B"),
+                          class = "position"))
+
+
+    amount <- c(A = 1, B = 1, C = 1)
+    checkEquals(position(amount),
+                structure(c(1, 1, 1), .Dim = c(1L, 3L),
+                          .Dimnames = list("", c("A", "B", "C")),
+                          timestamp = NA,
+                          instrument = c("A", "B", "C"),
+                          class = "position"))
+
+
+    amount <- c(A = 1, A = 1, C = 1)
+    position(amount)
+    checkEquals(position(amount),
+                structure(c(2, 1), .Dim = c(1L, 2L),
+                          .Dimnames = list("", c("A", "C")),
+                          timestamp = NA,
+                          instrument = c("A", "C"),
+                          class = "position"))
+    
+    checkEquals(position(amount, use.names = FALSE),
+                structure(3, .Dim = c(1L, 1L),
+                          .Dimnames = list("", ""),
+                          timestamp = NA,
+                          instrument = NA_character_,
+                          class = "position"))
+
+    ## row vector
+    A <- array(1:3, dim = c(1, 3))
+    colnames(A) <- letters[1:3]
+    checkEquals(position(A),
+                structure(c(1, 2, 3), .Dim = c(1L, 3L),
+                          .Dimnames = list("", c("a", "b", "c")),
+                          timestamp = NA,
+                          instrument = c("a", "b", "c"),
+                          class = "position"))
+
+    checkEquals(position(A, instrument = letters[1:3]),
+                structure(c(1, 2, 3), .Dim = c(1L, 3L),
+                          .Dimnames = list("", c("a", "b", "c")),
+                          timestamp = NA,
+                          instrument = c("a", "b", "c"),
+                          class = "position"))
+    
+    checkEquals(position(A, instrument = letters[4:6]),
+                structure(c(1, 2, 3), .Dim = c(1L, 3L),
+                          .Dimnames = list("", c("d", "e", "f")),
+                          timestamp = NA,
+                          instrument = c("d", "e", "f"),
+                          class = "position"))
+    
+    checkEquals(position(A, use.names = TRUE),
+                structure(c(1, 2, 3), .Dim = c(1L, 3L),
+                          .Dimnames = list("", c("a", "b", "c")),
+                          timestamp = NA,
+                          instrument = c("a", "b", "c"),
+                          class = "position"))
+    checkEquals(position(A, use.names = FALSE),
+                structure(6, .Dim = c(1L, 1L),
+                          .Dimnames = list("", ""),
+                          timestamp = NA,
+                          instrument = NA_character_,
+                          class = "position"))
+
+
+    ## col vector
+    A <- array(1:3, dim = c(3, 1))
+    colnames(A) <- "a"
+    checkEquals(position(A),
+                structure(6,
+                          .Dim = c(1L, 1L),
+                          .Dimnames = list("", "a"),
+                          timestamp = NA,
+                          instrument = "a",
+                          class = "position"))
+    
+    checkEquals(position(A, use.names = TRUE),
+                structure(6,
+                          .Dim = c(1L, 1L),
+                          .Dimnames = list("", "a"),
+                          timestamp = NA,
+                          instrument = "a",
+                          class = "position"))
+
+    checkEquals(position(A, use.names = FALSE),
+                structure(6, .Dim = c(1L, 1L),
+                          .Dimnames = list("", ""),
+                          timestamp = NA,
+                          instrument = NA_character_,
+                          class = "position"))
+
+    ## matrix
+    A <- array(1:6, dim = c(2, 3))
+    colnames(A) <- letters[1:3]
+    checkException(position(A, use.names = FALSE),
+                   silent = TRUE)
+
+    checkEquals(position(A),
+                structure(c(3, 7, 11), .Dim = c(1L, 3L),
+                          .Dimnames = list("", c("a", "b", "c")),
+                          timestamp = NA,
+                          instrument = c("a", "b", "c"),
+                          class = "position"))
+    checkEquals(position(A, use.names = TRUE),
+                structure(c(3, 7, 11), .Dim = c(1L, 3L),
+                          .Dimnames = list("", c("a", "b", "c")),
+                          timestamp = NA,
+                          instrument = c("a", "b", "c"),
+                          class = "position"))
+
+    checkEquals(position(A, timestamp = 3:1),
+                structure(c(3, 7, 11), .Dim = c(1L, 3L),
+                          .Dimnames = list("3", c("a", "b", "c")),
+                          timestamp = 3L,
+                          instrument = c("a", "b", "c"),
+                          class = "position"))
+
+}
+
+
+
 test.split_trades <- function() {
     amount <- c(1, -1)
-    price <- c(1,2)
+    price <- c(1, 2)
     ans <- split_trades(amount, price, seq_along(amount))
     checkEquals(length(ans), 1)
     checkEquals(ans,
@@ -105,7 +245,9 @@ test.split_trades <- function() {
     n <- c(1,1,-3,1)
     p <- c(1,2,3,2)
     tradetimes <- seq_along(n)
-    split_trades(n,p,tradetimes)
+    ans <- split_trades(n, p, tradetimes)
+    checkEquals(length(ans), 2)
+    
 }
 
 
@@ -302,7 +444,7 @@ test.btest <- function() {
 
 
     ## check whether date is matched against
-    ## timestamp. The 31 Jan is not in timestamp, so
+    ## timestamp. The 31 Jan 2015 is not in timestamp, so
     ## trade takes place on next day (2 Feb)
     res <- btest(list(prices),
                  signal = function() c(0.5,0.5),
@@ -467,7 +609,7 @@ test.btest <- function() {
     
 }
 
-test.btest_position <- function() {
+test.btest.position <- function() {
 
     ## single instrument
     prices <- 1:10
@@ -499,7 +641,7 @@ test.btest_position <- function() {
     
 }
 
-test.btest_NA <- function() {
+test.btest.NA <- function() {
 
     prices <- 1:10    
     signal <- function()
@@ -527,12 +669,32 @@ test.btest_NA <- function() {
     
 }
 
-test.btest_tc <- function() {
+test.btest.nullsignal <- function() {
+    prices <- 1:10
+
+    ## if signal returns NULL, the previous
+    ## position is kept.
+    signal1 <- function()
+        if (Time() == 5)
+            1 else Portfolio()
+    signal2 <- function()
+        if (Time() == 5)
+            1
+    signal3 <- function()
+        if (Time() == 5)
+            1 else NULL
+
+    checkEquals(btest(prices, signal1), btest(prices, signal2))
+    checkEquals(btest(prices, signal1), btest(prices, signal3))
+    
+}
+
+test.btest.tc <- function() {
     prices <- 1:10
     signal <- function()
         Time()
     tc <- function()
-        Time()
+        Time() ## will be 0:9
 
     journal(bt <- btest(prices, signal, tc = tc))
     checkEquals(bt$cum.tc,
@@ -543,6 +705,83 @@ test.btest_tc <- function() {
 
     checkEquals(bt$cum.tc,
                 c(0, cumsum(prices[-1])))    
+}
+
+test.btest.journal <- function() {
+
+    prices <- 1:10    
+    signal <- function()
+        if (Time() < 5)
+            1 else 0
+
+    j <- journal(btest(prices, signal))
+    checkEquals(j,
+                journal(amount = c(1, -1),
+                        timestamp = c(2, 6),
+                        instrument = "asset 1",
+                        price = c(2, 6)))
+
+    j <- journal(btest(prices, signal, instrument = "A"))
+    checkEquals(j,
+                journal(amount = c(1, -1),
+                        timestamp = c(2, 6),
+                        instrument = "A",
+                        price = c(2, 6)))
+    checkEquals(j,
+                journal(amount = c(1, -1),
+                        timestamp = c(2, 6),
+                        instrument = c("A", "A"),
+                        price = c(2, 6)))
+
+    prices <- 1:10
+    prices <- cbind(A = prices, B = prices+0.5)
+    signal <- function()
+        if (Time() < 5L)
+            c(1,1) else c(0,0)
+    j <- journal(btest(list(prices), signal))
+    checkEquals(j,
+                journal(amount = c(1, 1, -1, -1),
+                        timestamp = c(2, 2, 6, 6),
+                        instrument = c("A", "B", "A", "B"),
+                        price = c(2, 2.5, 6, 6.5)))
+    
+    j <- journal(btest(list(prices), signal,
+                       ## overwrite instruments
+                       instrument = c("a", "b"))) 
+    checkEquals(j,
+                journal(amount = c(1, 1, -1, -1),
+                        timestamp = c(2, 2, 6, 6),
+                        instrument = c("a", "b", "a", "b"),
+                        price = c(2, 2.5, 6, 6.5)))
+    
+    signal <- function()
+        if (Time() < 5L)
+            c(0,1) else c(0,0)
+    j <- journal(btest(list(prices), signal))
+    checkEquals(j,
+                journal(amount = c(1, -1),
+                        timestamp = c(2, 6),
+                        instrument = "B",
+                        price = c(2.5, 6.5)))
+
+}
+
+test.btest.rc <- function() {
+
+    prices <- 1:10
+    prices <- cbind(A = prices, B = prices + 0.5)
+    signal <- function()
+        if (Time() < 5L)
+            c(1,1) else c(0,0)
+    bt <- btest(list(prices), signal,
+                initial.cash = 100,
+                instrument = colnames(prices),
+                include.data = TRUE)
+    weights <- cbind(prices, 1) *
+        position(bt, include.cash = TRUE) / bt$wealth
+    C <- rbind(0, returns(cbind(prices, 1)) * weights[-nrow(prices), ])
+    checkEquals(rowSums(C), returns(bt$wealth, pad = 0))
+
 }
 
 test.journal <- function() {
@@ -1729,13 +1968,13 @@ test.returns <- function() {
     checkTrue(coredata(returns(z, pad = 1)[1L]) == 1)
 
     
-    ## period, but no timestamp: period is ignored
-    ## timestamp, but no period: timestamp is ignored
+    ## period, but no timestamp: period is ignored.
+    ## timestamp, but no period: timestamp is ignored.
     ##
-    ## (when there is no period/rebalance.when, methods are required
-    ## to keep timestamp information for themselves and
-    ## then to re-assemble the necessary class
-    ## structure)
+    ## (when there is no period/rebalance.when, methods
+    ## are required to keep timestamp information for
+    ## themselves and then to re-assemble the necessary
+    ## class structure)
     x <- 101:112
     t <- seq_along(x)
     suppressWarnings(checkEquals(returns(x, period = "month"), returns(x)))
@@ -1790,7 +2029,110 @@ test.returns <- function() {
                                           "2012-12-31")),t)]))
 
     
-    ## portfolio returns with weights
+
+    ## from journal to time-weighted returns
+
+    prices <- cbind(a = 101:110, b = 201:210)
+
+    j <- journal(timestamp  = c(1,4,4,5,5,7),
+                 amount     = c(1,1,1,-1,1,-1),
+                 instrument = c("a", "a", "b", "a", "b", "a"),
+                 price      = c(100.5,104.1,203,105,205.2,108))
+
+    p <- position(j, when = 1:10)
+    rowSums(p*prices)
+
+
+    ## missing values
+    x <- zoo(c(NA, 2:5), as.Date("2017-10-27") + 1:5)
+    checkEqualsNumeric(unclass(returns(x, period = "month")), c(NA, 0.25))
+
+}
+
+test.returns.period <- function() {
+
+    ## yearly returns
+    library("datetimeutils", quietly = TRUE)
+
+    dates <- sort(as.Date("1990-01-01") + sample(3700, 1000))
+    x <- seq_along(dates)
+    R <- returns(x, t = dates, period = "year")
+
+    n <- nth_day(dates, period = "year", n = "last")
+    ni <- nth_day(dates, period = "year", n = "last", index = TRUE)
+    if (!1 %in% ni)
+        ni <- c(1, ni)
+    checkEqualsNumeric(.returns(x[ni], lag = 1), R)
+    checkEquals(attr(R, "t"), n)
+
+    R <- returns(x, t = dates, period = "year", complete.first = FALSE)
+    n <- nth_day(dates, period = "year", n = "last")
+    ni <- nth_day(dates, period = "year", n = "last", index = TRUE)
+    checkEqualsNumeric(.returns(x[ni], lag = 1), R)
+    checkEquals(attr(R, "t"), n[-1])
+    
+}
+
+test.returns.rebalance  <- function() {
+
+    prices <- cbind(a = 101:105, b = 201:205)
+
+    ## 2 assets
+    weights <- c(0.8, 0.2)
+    ans <- returns(prices, weights = weights)
+    checkEqualsNumeric(ans, returns(prices) %*% weights)
+    
+    weights <- c(0.8, 0.2)
+    ans <- returns(prices, weights = weights,
+                   rebalance.when = 1)
+    checkEqualsNumeric(ans, returns(prices %*% (weights/prices[1, ])))
+    
+    weights <- c(0.8, 0.2)
+    ans <- returns(prices, weights = weights,
+                   rebalance.when = 2)
+    tmp <- returns(prices %*% (weights/prices[2, ]))
+    tmp[1] <- 0
+    checkEqualsNumeric(ans, tmp)
+
+    weights <- c(0.8, 0.2)
+    ans <- returns(prices,
+                   weights = weights,
+                   rebalance.when = c(1, 3))
+    tmp1 <- returns(prices[1:3, ] %*% (weights/prices[1L, ]))
+    tmp2 <- returns(prices[3:5, ] %*% (weights/prices[3L, ]))
+    checkEqualsNumeric(ans, c(tmp1, tmp2))
+
+    weights <- c(0.8, 0.2)
+    ans <- returns(prices,
+                   weights = weights,
+                   rebalance.when = FALSE)
+    checkEqualsNumeric(ans, rep(0, nrow(prices)-1))
+    
+    weights <- rbind(c(0.8, 0.2),
+                     c(0.5, 0.5))
+    ans <- returns(prices,
+                   weights = weights,
+                   rebalance.when = c(1, 3))    
+    tmp1 <- returns(prices[1:3, ] %*% (weights[1L, ]/prices[1L, ]))
+    tmp2 <- returns(prices[3:5, ] %*% (weights[2L, ]/prices[3L, ]))
+    checkEqualsNumeric(ans, c(tmp1, tmp2))
+
+
+    weights <- rbind(c(0.8, 0.2),
+                     c(0.8, 0.2),
+                     c(0.5, 0.5),
+                     c(0.5, 0.5),
+                     c(0.5, 0.5))
+    ans <- returns(prices,
+                   weights = weights,
+                   rebalance.when = c(1, 3))    
+    tmp1 <- returns(prices[1:3, ] %*% (weights[1L, ]/prices[1L, ]))
+    tmp2 <- returns(prices[3:5, ] %*% (weights[3L, ]/prices[3L, ]))
+    checkEqualsNumeric(ans, c(tmp1, tmp2))
+
+
+
+        ## portfolio returns with weights
     x <- 101:112
     t <- seq_along(x)
     x <- cbind(x+rnorm(length(x)), x+rnorm(length(x)))
@@ -1817,26 +2159,16 @@ test.returns <- function() {
         c("class", "contributions", "holdings", "index"))
 
     ## ... match rebalance.when against timestamp
-    h <- attr(returns(x, weights = c(0.2, 0.8),
-                      rebalance.when = 1),
+    h <- attr(returns(x, weights = c(0.2, 0.8), rebalance.when = 1),
               "holdings")
     checkTrue(all(apply(h, 2,
                         function(x) length(unique(x))) == 1L))
-    h <- attr(returns(x, weights = c(0.2, 0.8),
-                      rebalance.when = 3),
+
+    h <- attr(returns(x, weights = c(0.2, 0.8), rebalance.when = 3),
               "holdings")
     checkTrue(all(apply(h, 2,
                         function(x) length(unique(x))) == 2L))
 
-    h <- attr(returns(x, weights = c(0.2, 0.8),
-                      rebalance.when = 3),
-              "holdings")
-    h2 <- attr(returns(x, weights = c(0.2, 0.8),
-                      rebalance.when = c(1,3)),
-              "holdings")
-    checkEquals(h, h2)
-    
-    
     x <- 101:110
     t <- as.Date("2017-1-1")+1:10
     x <- cbind(x + rnorm(length(x)),
@@ -1912,26 +2244,9 @@ test.returns <- function() {
     ##             returns(price, position = pos2))
     
 
-    ## from journal to time-weighted returns
-
-    prices <- cbind(a = 101:110, b = 201:210)
-
-    j <- journal(timestamp  = c(1,4,4,5,5,7),
-                 amount     = c(1,1,1,-1,1,-1),
-                 instrument = c("a", "a", "b", "a", "b", "a"),
-                 price      = c(100.5,104.1,203,105,205.2,108))
-
-    p <- position(j, when = 1:10)
-    rowSums(p*prices)
-
-
-    ## missing values
-    x <- zoo(c(NA, 2:5), as.Date("2017-10-27") + 1:5)
-    checkEqualsNumeric(unclass(returns(x, period = "month")), c(NA, 0.25))
-
 }
 
-test.returns.p_returns_monthly <- function () {
+test.returns.p_returns_monthly <- function() {
 
     library("zoo")
     t <- seq(as.Date("2012-01-01"), as.Date("2012-12-31"), by = "1 day")
@@ -2102,7 +2417,7 @@ test.NAVseries <- function() {
     checkEquals(c(nav), 1:10)
     checkEquals(attr(nav, "timestamp"), 1:10)  ## integer timestamp added
     ## summary
-    sum.nav <- summary(nav)
+    sum.nav <- summary(nav)[[1]]
     checkEquals(sum.nav$return, tail(nav,1)/head(nav, 1)-1)
     checkEquals(sum.nav$nna, 0)
     checkEquals(sum.nav$nobs, 10)
@@ -2113,7 +2428,7 @@ test.NAVseries <- function() {
     nav <- NAVseries(c(1, NA, 3:10))
     checkEquals(attr(nav, "timestamp"), 1:10)  ## integer timestamp added
     ## summary
-    sum.nav <- summary(nav)
+    sum.nav <- summary(nav)[[1]]
     checkEquals(sum.nav$return, tail(nav,1)/head(nav, 1)-1)
     checkEquals(sum.nav$nna, 1)
     checkEquals(sum.nav$nobs, 10)
@@ -2125,7 +2440,7 @@ test.NAVseries <- function() {
     checkEquals(c(nav), 1:10)
     checkEquals(attr(nav, "timestamp"), as.Date("2017-1-1")+0:9)
     ## summary
-    sum.nav <- summary(nav)
+    sum.nav <- summary(nav)[[1]]
     checkEquals(sum.nav$return, tail(nav,1)/head(nav, 1)-1)
     checkEquals(sum.nav$nna, 0)
     checkEquals(sum.nav$nobs, 10)
@@ -2171,6 +2486,27 @@ test.NAVseries <- function() {
     checkEqualsNumeric(as.NAVseries(bt, drop.NA = FALSE),
                        c(NA, NA, NA, NA, 100, 100, 101, 102, 103, 104))
 
+    
+}
+
+test.NAVseries.summary <- function() {
+
+    library("PMwR")
+    library("RUnit")
+    nav <- NAVseries(1:10)
+    bm <- NAVseries(1:10)
+    checkEquals(summary(nav)[[1]]$tracking.error, NULL)
+    checkEquals(summary(nav, bm = bm)[[1]]$tracking.error, 0)
+
+    nav <- NAVseries(cumprod(1+rnorm(10, sd = 0.01)))
+    bm <- NAVseries(cumprod(1+rnorm(10, sd = 0.01)))    
+    checkEquals(summary(nav, bm = bm)[[1]]$tracking.error,
+                sd(returns(nav) - returns(bm)))
+    checkEquals(summary(nav, bm = bm)[[2]]$tracking.error, 0)
+    checkEquals(summary(nav,
+                        bm = bm,
+                        assume.daily = TRUE)[[1]]$tracking.error,
+                16*sd(returns(nav) - returns(bm)))
 
 }
 
