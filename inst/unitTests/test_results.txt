@@ -1,12 +1,12 @@
-RUNIT TEST PROTOCOL -- Mon Apr  1 10:28:48 2019 
+RUNIT TEST PROTOCOL -- Wed May 29 10:32:35 2019 
 *********************************************** 
-Number of test functions: 34 
+Number of test functions: 35 
 Number of errors: 0 
 Number of failures: 0 
 
  
 1 Test Suite : 
-PMwR - 34 test functions, 0 errors, 0 failures
+PMwR - 35 test functions, 0 errors, 0 failures
 
 
 
@@ -22,18 +22,19 @@ Test file: /home/es19/Packages/PMwR/inst/unitTests/ut_PMwR.R
 test..pl_stats: (11 checks) ... OK (0 seconds)
 test.as.journal: (3 checks) ... OK (0 seconds)
 test.btest: (52 checks) ... OK (0.05 seconds)
-test.btest.journal: (6 checks) ... OK (0 seconds)
+test.btest.b: (3 checks) ... OK (0 seconds)
+test.btest.journal: (6 checks) ... OK (0.01 seconds)
 test.btest.NA: (4 checks) ... OK (0 seconds)
 test.btest.nullsignal: (2 checks) ... OK (0 seconds)
-test.btest.position: (40 checks) ... OK (0.03 seconds)
+test.btest.position: (40 checks) ... OK (0.04 seconds)
 test.btest.rc: (1 checks) ... OK (0 seconds)
 test.btest.tc: (2 checks) ... OK (0 seconds)
-test.div_adjust: (10 checks) ... OK (0 seconds)
+test.div_adjust: (18 checks) ... OK (0 seconds)
 test.is_valid_ISIN: (2 checks) ... OK (0 seconds)
 test.journal: (33 checks) ... OK (0.01 seconds)
 test.journal.all.equal: (3 checks) ... OK (0 seconds)
 test.NAVseries: (20 checks) ... OK (0.01 seconds)
-test.NAVseries.summary: (5 checks) ... OK (0.02 seconds)
+test.NAVseries.summary: (5 checks) ... OK (0.01 seconds)
 test.NAVseries.window: (2 checks) ... OK (0 seconds)
 test.pl: (56 checks) ... OK (0.01 seconds)
 test.pl.volume: (6 checks) ... OK (0 seconds)
@@ -46,7 +47,7 @@ test.rebalance: (23 checks) ... OK (0.01 seconds)
 test.replace_weight: (1 checks) ... OK (0 seconds)
 test.returns: (40 checks) ... OK (0.01 seconds)
 test.returns.p_returns_monthly: (6 checks) ... OK (0 seconds)
-test.returns.period: (4 checks) ... OK (0.61 seconds)
+test.returns.period: (4 checks) ... OK (0.01 seconds)
 test.returns.rebalance: (22 checks) ... OK (0.01 seconds)
 test.scale1: (21 checks) ... OK (0 seconds)
 test.split_adjust: (10 checks) ... OK (0 seconds)

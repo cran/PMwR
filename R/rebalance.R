@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-18  Enrico Schumann
+## Copyright (C) 2008-19  Enrico Schumann
 
 rebalance <- function(current,
                       target,
@@ -40,14 +40,14 @@ rebalance <- function(current,
 
         ## current == 0 and target is a single number
         current <- rep.int(current, length(price))
-        target <- rep.int(target, length(price))        
+        target <- rep.int(target, length(price))
         names(current) <- names(target) <- names(price)
     }
 
     if (length(current) == 1L &&
         current == 0 &&
         is.null(names(current))) {
-        
+
         current <- rep.int(current, length(target))
         names(current) <- names(target)
     }
@@ -75,9 +75,9 @@ rebalance <- function(current,
             is.null(names(target))) {
             current <- rep(0, length(price))
             target <- rep(target, length(price))
-            names(current) <- names(target) <- names(price)            
+            names(current) <- names(target) <- names(price)
         }
-            
+
         if (is.null(names(price)) ||
             (is.null(names(current)) && !identical(unname(current), 0)) ||
             is.null(names(target))) {
@@ -85,12 +85,22 @@ rebalance <- function(current,
                  " is TRUE but vectors are not named")
         }
 
-        ## TODO say for which instruments there is no price
-        if (any(is.na(match(names(current), names(price)))))
-            warning("instrument in current without price")
-        if (any(is.na(match(names(target), names(price)))))
-            warning("instrument in target without price")
-
+        if (any(miss.name <- is.na(match(names(current),
+                                         names(price))))) {
+            warning("instrument in current without price: ",
+                    if (sum(miss.name) > 3) "\n",
+                    paste(names(current)[miss.name],
+                          collapse = if (sum(miss.name) > 3) "\n" else ","),
+                    immediate. = TRUE)
+        }
+        if (any(miss.name <- is.na(match(names(target),
+                                         names(price))))) {
+            warning("instrument in target without price: ",
+                    if (sum(miss.name) > 3) "\n",
+                    paste(names(current)[miss.name],
+                          collapse = if (sum(miss.name) > 3) "\n" else ","),
+                    immediate. = TRUE)
+        }
         all.names <- sort(unique(
             c(names(target), names(current))))
         multiplier <- multiplier[all.names]
@@ -147,7 +157,7 @@ rebalance <- function(current,
     attr(rbl, "multiplier") <-  multiplier
 
     if (drop.zero)
-        rbl <- rbl[rbl$current != 0 | rbl$target != 0, ]
+        rbl <- rbl[rbl$current != rbl$target, ]
     class(rbl) <- c("rebalance", "data.frame")
     rbl
 }
@@ -164,12 +174,12 @@ print.rebalance <- function(x, ..., drop.zero = TRUE) {
     df <- data.frame(price   = x$price,
                      current = x$current,
                      value   = x$current * x$price, ## TODO multiplier
-                     `%`    = format(100*x$current * x$price / attr(x, "notional"),
-                                     nsmall = 1, digits = 1),
+                     `%`     = format(100*x$current * x$price / attr(x, "notional"),
+                                      nsmall = 1, digits = 1),
                      `  `    = format("     ", justify = "centre"),
                      target  = x$target,
                      value   = x$target * x$price,
-                     `%`    = format(100*x$target * x$price / attr(x, "notional"),
+                     `%`     = format(100*x$target * x$price / attr(x, "notional"),
                                       nsmall = 1, digits = 1),
                      `  `    = format("     ", justify = "centre"),
                      order   = x$difference,
@@ -177,7 +187,7 @@ print.rebalance <- function(x, ..., drop.zero = TRUE) {
                      check.names = FALSE)
 
     if (drop.zero)
-        df <- df[df$current != 0 | df$target != 0, ]
+        df <- df[df$current != df$target, ]
     print(df, ...)
 
     cat("\nNotional: ", attr(x, "notional"),
