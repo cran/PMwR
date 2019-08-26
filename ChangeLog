@@ -1,3 +1,73 @@
+2019-08-26  Enrico Schumann  <es@enricoschumann.net>
+
+	* DESCRIPTION (Version): 0.12-0
+
+2019-08-22  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns.zoo): fixed -- with a
+        lag different from 1 (and no padding), the
+        timestamp of the resulting returns series was
+        wrong
+
+2019-08-08  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/btest.R (btest): 'btest' now checks the
+        'dim' attribute of 'prices' (after having them
+        unlisted, in the case of several assets). If
+        none is found, 'as.matrix' is called. See
+        ChangeLog 2019-06-20.
+
+2019-07-26  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/valuation.R (valuation.position): warn when
+        there are missing values in multiplier, and add
+        an argument 'do.warn' to switch off the warning
+
+        * R/pricetable.R (pricetable.default): support
+        shortcuts for setting up a pricetable with a
+        single timestamp but several instruments. For
+        instance,
+
+          pricetable(c(A = 1, B = 2))  ## or
+          pricetable(1:2, instrument = c("A", "B"))
+
+        now create a pricetable.
+
+        * R/position.R (toHTML.position): add
+	method. Currently only works for positions at a
+	single point in time.
+
+2019-07-03  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/pl.R (pl.default, print.pl): new argument
+        'footnotes', with default TRUE. If FALSE, less
+        information is printed for 'pl' objects. In
+        particular, open positions no longer produce a
+        warning ("sum(amount) is not zero"), but only a
+        message, which is only shown when 'footnotes'
+        is TRUE.
+
+2019-06-20  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/btest.R (btest): [experimental]
+        'as.matrix' is no longer generally called on
+        'prices', but only if 'prices' are numeric
+        vectors. This allows alternative classes to
+        be used for 'prices', as long as they define
+        subsetting via integers/logicals in the same
+        way as numeric matrices.
+
+2019-06-14  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns): returns will now be
+        computed for period "itd" even when no
+        timestamp is provided
+
+2019-06-05  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/btest.R (btest): when 'convert.weights' is
+        TRUE, only convert non-zero weights
+
 2019-06-02  Enrico Schumann  <es@enricoschumann.net>
 
         * DESCRIPTION (Version): 0.11-1
@@ -200,8 +270,8 @@
 
 2018-10-11  Enrico Schumann  <es@enricoschumann.net>
 
-        * R/btest.R (btest): experimental -- argument
-        'tc' may also be a function
+        * R/btest.R (btest): [experimental]
+        argument 'tc' may also be a function
 
         * R/btest.R (btest): fixed -- when a signal
         function evaluates to NULL, the suggested
@@ -291,8 +361,9 @@
 
 2018-08-17  Enrico Schumann  <es@enricoschumann.net>
 
-        * R/btest.R (btest): experimental -- new
-        arguments 'variations' and 'variations.settings'
+        * R/btest.R (btest): [experimental]
+        new arguments 'variations' and
+        'variations.settings'
 
 2018-08-04  Enrico Schumann  <es@enricoschumann.net>
 
@@ -736,9 +807,8 @@
 
 2017-08-16  Enrico Schumann  <es@enricoschumann.net>
 
-        * R/pricetable.R (pricetable.zoo): experimental
-        -- have pricetable merge zoo series passed
-        via ...
+        * R/pricetable.R (pricetable.zoo): [experimental]
+        have pricetable merge zoo series passed via ...
 
 2017-08-16  Enrico Schumann  <es@enricoschumann.net>
 

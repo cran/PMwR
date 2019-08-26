@@ -539,32 +539,45 @@ btest  <- function(prices,
     }
 
     if (is.list(prices)) {
-
         if (length(prices) == 1L) {
-            mC <- as.matrix(prices[[1L]])
+
+            mC <- prices[[1L]]
+            if (is.null(dim(mC)))
+                mC <- as.matrix(mC)
             trade.at.open <- FALSE
+
         } else if (length(prices) == 4L) {
-            mO <- as.matrix(prices[[1L]])
-            mH <- as.matrix(prices[[2L]])
-            mL <- as.matrix(prices[[3L]])
-            mC <- as.matrix(prices[[4L]])
+            mO <- prices[[1L]]
+            mH <- prices[[2L]]
+            mL <- prices[[3L]]
+            mC <- prices[[4L]]
+
+            if (is.null(dim(mO)))
+                mO <- as.matrix(mO)
+            if (is.null(dim(mH)))
+                mH <- as.matrix(mH)
+            if (is.null(dim(mL)))
+                mL <- as.matrix(mL)
+            if (is.null(dim(mC)))
+                mC <- as.matrix(mC)
         } else
             stop("see documentation on ", sQuote("prices"))
 
     } else {
 
-        prices <- as.matrix(prices)
+        if (is.null(dim(prices)))
+            prices <- as.matrix(prices)
+
         if (ncol(prices) == 1L) {
             mC <- prices
             trade.at.open <- FALSE
         } else if (ncol(prices) == 4L) {
-            mO <- prices[ ,1L]
-            mH <- prices[ ,2L]
-            mL <- prices[ ,3L]
-            mC <- prices[ ,4L]
+            mO <- prices[, 1L]
+            mH <- prices[, 2L]
+            mL <- prices[, 3L]
+            mC <- prices[, 4L]
         } else
             stop("see documentation on ", sQuote("prices"))
-
     }
 
     ## param .... settings
@@ -624,8 +637,11 @@ btest  <- function(prices,
                            Globals = Globals)
 
             if (!is.null(temp)) {
-                if (convert.weights)
-                    temp <- temp * initial.wealth/prices0
+                if (convert.weights) {
+                    temp0 <- temp != 0
+                    temp[temp0] <- temp[temp0] *
+                                   initial.wealth/prices0[temp0]
+                }
                 Xs[t, ] <- temp
             } else
                 Xs[t, ] <- 0
@@ -738,8 +754,10 @@ btest  <- function(prices,
                            Globals = Globals)
 
             if (!is.null(temp)) {
-                if (convert.weights)
-                    temp <- temp * v[t1] / mC[t1, ]
+                if (convert.weights) {
+                    temp0 <- temp != 0
+                    temp[temp0] <- temp[temp0] * v[t1] / mC[t1, temp0]
+                }
                 Xs[t, ] <- temp
             } else
                 Xs[t, ] <- Xs[t1, ] ## b0
@@ -851,9 +869,9 @@ btest  <- function(prices,
     }
 
     if (!missing(instrument))
-        colnames(X) <- instrument
+        colnames(Xs) <- colnames(X) <- instrument
     if (is.null(colnames(X)))
-        colnames(X) <- paste("asset", seq_len(ncol(X)))
+        colnames(Xs) <- colnames(X) <- paste("asset", seq_len(ncol(X)))
     if (missing(timestamp))
         timestamp <- seq_len(nrow(X))
 

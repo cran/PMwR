@@ -607,6 +607,31 @@ test.btest <- function() {
 
 }
 
+test.btest.prices <- function() {
+
+    prices <- 1:5
+    checkEquals(
+        btest(prices, signal = function() 1),
+        btest(as.matrix(prices), signal = function() 1))
+
+    checkEquals(
+        btest(prices, signal = function() 1),
+        btest(list(prices), signal = function() 1))
+
+    checkEquals(
+        btest(prices, signal = function() 1),
+        btest(list(as.matrix(prices)), signal = function() 1))
+
+    library("zoo")
+    bt1 <- btest(prices, signal = function() 1)
+    bt2 <- btest(zoo(prices), signal = function() 1)
+    checkEqualsNumeric(bt1$wealth, bt2$wealth)
+    checkEqualsNumeric(bt1$position, bt2$position)
+    checkEqualsNumeric(bt1$suggested.position,
+                       bt2$suggested.position)
+
+}
+
 test.btest.b <- function() {
     prices <- 1:5
     timestamp <- Sys.Date() + 0:4
@@ -670,6 +695,7 @@ test.btest.NA <- function() {
     checkEquals(bt1 <- btest(prices, signal)$wealth,
                 c(0, 0, 1, 2, 3, 4, 4, 4, 4, 4))
 
+    ## signal returns position
     prices[7:10] <- NA
     signal <- function()
         if (Time() < 5)
@@ -686,6 +712,28 @@ test.btest.NA <- function() {
             c(1,1) else c(1,0)
     checkEquals(bt3 <- btest(list(prices), signal)$wealth,
                 c(0, 0, 2, 4, 6, 8, 9, 10, 11, 12))
+
+
+    ## signal returns weight
+    prices <- 1:5
+    prices[4:5] <- NA
+    signal <- function() {
+        if (Time(0) <= 3)
+            0.5 else 0
+    }
+    btest(prices, signal, initial.cash = 100, convert.weights = TRUE)$wealth
+
+    prices1  <- prices2 <- 1:10
+    prices2[7:10] <- NA
+    prices <- cbind(prices1, prices2)
+    signal <- function()
+        if (Time() < 5)
+            c(1,1) else c(1,0)
+    checkEquals(bt3 <- btest(list(prices), signal)$wealth,
+                c(0, 0, 2, 4, 6, 8, 9, 10, 11, 12))
+
+
+
 
 }
 
@@ -2080,6 +2128,10 @@ test.returns.period <- function() {
     checkEqualsNumeric(.returns(x[ni], lag = 1), R)
     checkEquals(attr(R, "t"), n[-1])
 
+
+    checkEqualsNumeric(returns(rep(1, 10), period = "itd"), 0)
+    checkEqualsNumeric(returns(rep(NA, 10), period = "itd"), NA_real_)
+
 }
 
 test.returns.rebalance  <- function() {
@@ -2273,6 +2325,29 @@ test.returns.p_returns_monthly <- function() {
 
 }
 
+test.returns.lag <- function() {
+    x <- 1:10
+    checkEquals(returns(x),
+                returns(x, lag = 1))
+
+    checkEquals(returns(x, lag = 2),
+                x[3:10]/x[1:8] - 1)
+
+    library("zoo")
+    t <- as.Date("2000-1-1")+1:10
+    checkEquals(returns(x, t, lag = 2),  ## 't' is ignored
+                returns(x, lag = 2))
+    checkEqualsNumeric(returns(zoo(x, t), lag = 2),
+                       returns(x, lag = 2))
+
+    checkEquals(index(returns(zoo(x, t), lag = 2)), t[-c(1:2)])
+
+    checkEquals(index(returns(zoo(x, t), lag = 2, pad = NA)), t)
+
+    checkTrue(all(is.na(
+        coredata(returns(zoo(x, t), lag = 2, pad = NA))[1:2])))
+
+}
 
 test.scale1 <- function() {
 
@@ -2587,6 +2662,13 @@ test.pricetable <- function() {
                           instrument = c("A", "B", "A"),
                           class = "pricetable"))
 
+
+    ## setting up a pt: vector => matrix
+    checkTrue(all(dim(pricetable(1:2, instrument = c("A", "B"))) == c(1, 2)))
+    checkTrue(all(dim(pricetable(1:2, timestamp = 1:2)) == c(2,1)))
+    checkEquals(pricetable(1:2, instrument = c("A", "B")),
+                pricetable(c(A = 1, B = 2)))
+
 }
 
 test.div_adjust <- function() {
@@ -2719,5 +2801,13 @@ test.split_adjust <- function() {
 test.streaks <- function() {
 
     x <- c(112, 102, 101, 104, 111, 98, 82, 93, 99, 105, 103, 110)
+
+}
+
+test.valuation <- function() {
+    pos <- position(c(A = 10, B = 5))
+    checkEqualsNumeric(valuation(pos, t(c(2, 1))),
+                       c(20,5))
+
 
 }
