@@ -12,30 +12,39 @@
 \usage{
 streaks(x, ...)
 
-\method{streaks}{default}(x, up =  0.2, down = -0.2,
-                initial.state = NA, \dots)
-\method{streaks}{zoo}(x, up =  0.2, down = -0.2,
-                initial.state = NA, \dots)
-\method{streaks}{NAVseries}(x, up =  0.2, down = -0.2,
-                initial.state = NA, \dots)
+\method{streaks}{default}(x, up =  0.2, down = -up,
+        initial.state = NA, y = NULL, \dots)
+\method{streaks}{zoo}(x, up =  0.2, down = -up,
+        initial.state = NA, y = NULL, \dots)
+\method{streaks}{NAVseries}(x, up =  0.2, down = -up,
+        initial.state = NA, bm = NULL, \dots)
 
 }
 \arguments{
   \item{x}{
     a price series
-}
+  }
   \item{initial.state}{
     \code{\link{NA}}, \code{"up"} or \code{"down"}
-}
+  }
   \item{up}{
     a number, such as 0.1 (i.e. 10\%)
-}
+  }
   \item{down}{
     a negative number, such as -0.1 (i.e. -10\%)
-}
+  }
+  \item{y}{
+    another price series
+  }
+  \item{bm}{
+
+    another price series. Mapped to \sQuote{\code{y}}
+    in the default method.
+
+  }
   \item{\dots}{
     other arguments passed to methods
-}
+  }
 }
 \details{
 
@@ -75,22 +84,30 @@ streaks(x, ...)
   A \code{\link{data.frame}}:
  \item{start}{beginning of streak}
  \item{end}{end of streak}
- \item{state}{\code{up}, \code{down} or \code{\link{NA}}.}
+ \item{state}{\code{up}, \code{down} or \code{\link{NA}}}
+ \item{return}{the return over the streak. If \code{y}
+   was specified, geometric excess return is
+   computed (see Examples).}
 }
 %% \references{
 %% %% ~put references to the literature/web site here ~
 %% }
 \author{
-  Enrico Schumann
+  Enrico Schumann <es@enricoschumann.net>
 }
 \seealso{
   \code{\link{drawdowns}}
 }
 \examples{
-\dontrun{
-library("PMwR")
-library("zoo")
-dax <- zoo(DAX[[1]], as.Date(row.names(DAX)))
-streaks(dax)
-}
+streaks(DAX[[1]], t = as.Date(row.names(DAX)))
+
+
+## results <- streaks(x = <...>, y = <...>)
+##
+## ===> *arithmetic* excess returns
+##       x[results$end]/x[results$start] -
+##       y[results$end]/y[results$start]
+## ===> *geometric* excess returns
+##       x[results$end]/x[results$start] /
+##      (y[results$end]/y[results$start]) - 1
 }

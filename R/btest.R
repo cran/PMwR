@@ -39,15 +39,18 @@ btest  <- function(prices,
 
         vsettings <- list(method = "loop",
                           load.balancing = FALSE,
-                          cores = getOption("mc.cores", 2L))
+                          cores = getOption("mc.cores", 2L),
+                          expand.grid = TRUE)
         vsettings[names(variations.settings)] <- variations.settings
         all_args$variations.settings <- NULL
 
         lens <- lengths(variations)
-        cases <- do.call(expand.grid,
-                         lapply(lens, seq_len))
+        if (vsettings$expand.grid)
+            cases <- do.call(expand.grid,
+                             lapply(lens, seq_len))
+        else
+            cases <- as.data.frame(lapply(lens, seq_len))
         args <- vector("list", length = nrow(cases))
-
         for (i in seq_along(args)) {
             tmp <- mapply(`[[`, variations, cases[i, ],
                           SIMPLIFY = FALSE)
@@ -373,7 +376,7 @@ btest  <- function(prices,
               else
                   TRUE
         i_rdays <- match(aggregate(tmp[ii],
-                                   by = list(list(paste0(format(tmp[ii], "%Y"), "-", quarters(tmp[ii])))),
+                                   by = list(paste0(format(tmp[ii], "%Y"), "-", quarters(tmp[ii]))),
                                    FUN = head, 1)[[2L]],
                          tmp)
         do.rebalance <- function(...)
@@ -388,7 +391,7 @@ btest  <- function(prices,
               else
                   TRUE
         i_rdays <- match(aggregate(tmp[ii],
-                                   by = list(list(paste0(format(tmp[ii], "%Y"), "-", quarters(tmp[ii])))),
+                                   by = list(paste0(format(tmp[ii], "%Y"), "-", quarters(tmp[ii]))),
                                    FUN = tail, 1)[[2L]],
                          tmp)
         do.rebalance <- function(...)
@@ -644,7 +647,7 @@ btest  <- function(prices,
                 }
                 Xs[t, ] <- temp
             } else
-                Xs[t, ] <- 0
+                Xs[t, ] <- initial.position
             computeSignal <- FALSE
         } else {
             Xs[t, ] <- rep.int(0, nA)
@@ -958,13 +961,13 @@ plot.btest <- function(x, y = NULL, type = "l",
 }
 
 lines.btest <- function(x, y = NULL, type = "l",
-                        xlab = "", ylab = "", ...) {
+                        ...) {
     if (!is.null(x$timestamp))
         lines(x$timestamp[-seq_len(x$b)], x$wealth[-seq_len(x$b)],
-              type = type, xlab = xlab, ylab = ylab, ...)
+              type = type, ...)
     else
         lines(x$wealth[-seq_len(x$b)], y,
-              type = type, xlab = xlab, ylab = ylab, ...)
+              type = type, ...)
     invisible()
 }
 

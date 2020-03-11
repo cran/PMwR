@@ -5,7 +5,7 @@
 \usepackage{libertine}
 \usepackage[scaled=0.9]{inconsolata}
 \usepackage[T1]{fontenc}
-\renewcommand*\familydefault{\sfdefault} 
+\renewcommand*\familydefault{\sfdefault}
 \usepackage{amsmath,amstext}
 \usepackage{hyperref}
 \usepackage{natbib}
@@ -39,9 +39,10 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 \noindent \url{es@enricoschumann.net}\\
 \bigskip
 
-<<echo=false>>=
-require("PMwR")
-require("zoo")
+<<echo=false,results=hide>>=
+library("PMwR")
+library("zoo")
+try(tinytest::test_package("PMwR"), silent = TRUE)
 @
 
 \noindent The aim of \textsc{pm}w\textsc{r} is to
@@ -61,19 +62,30 @@ frequently, simply because the code has been written
 over many years and is in need of being groomed for
 general use.%
 \footnote{
-<<echo=false>>=
-test.rep <- readLines(system.file("unitTests/test_results.txt", 
+<<echo=false,results=hide>>=
+test.rep <- readLines(system.file("unitTests/test_results.txt",
                                   package = "PMwR"))
 nt <- gsub(".*\\(([0-9]+) checks?\\).*", "\\1",
            test.rep[grep("\\(\\d+ checks?\\)", test.rep)])
-@ 
+
+if (requireNamespace("tinytest")) {
+    tinytest.results <- try(suppressMessages(
+        suppressWarnings(tinytest::test_package("PMwR"))))
+    if (inherits(tinytest.results, "try-error"))
+        nt <- "several hundred"
+    else
+        nt <- nrow(as.data.frame(tinytest.results)) +
+            sum(as.numeric(nt))
+} else
+    nt <- "several hundred"
+@
 Even if \textsc{pm}w\textsc{r} is under development:
 the package is to provide well-documented and reliable
 code.  For all computations, unit tests are included.
 As of package version %
-\Sexpr{pv}, there are \Sexpr{sum(as.numeric(nt))} tests
+\Sexpr{pv}, there are \Sexpr{nt} tests
 included.  These tests are stored in subdirectory
-\texttt{unitTests}.} %
+\texttt{tinytest}.} %
 
 Specifically, interfaces to functions may not be stable
 yet (e.g., argument names are currently being made
@@ -92,9 +104,9 @@ The latest version of the package is available from
 \url{http://enricoschumann.net/R/packages/PMwR/}. To install the
 package from within R, type
 <<eval=false, results=hide>>=
-install.packages('PMwR', 
+install.packages('PMwR',
                  repos = c('http://enricoschumann.net/R', getOption('repos')))
-@ 
+@
 within a session. The package depends on several other
 packages, which can be obtained from the same
 repository and from \textsc{cran}.
@@ -130,9 +142,9 @@ corrections.  Please send bug reports directly to the
 package maintainer, for instance by using
 \texttt{bug.report}.\index{bug reports}
 <<eval=false>>=
-utils::bug.report("[PMwR] Unexpected behaviour in function <XXX>", 
+utils::bug.report("[PMwR] Unexpected behaviour in function <XXX>",
                   maintainer("PMwR"), package = "PMwR")
-@ 
+@
 
 %% \section*{Examples}
 

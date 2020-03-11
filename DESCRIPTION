@@ -1,8 +1,8 @@
 Package: PMwR
 Type: Package
 Title: Portfolio Management with R
-Version: 0.12-0
-Date: 2019-08-26
+Version: 0.14-0
+Date: 2020-03-11
 Maintainer: Enrico Schumann <es@enricoschumann.net>
 Authors@R: person(given = "Enrico", family = "Schumann",
                   role  = c("aut", "cre"),
@@ -15,7 +15,7 @@ Description: Functions and examples for 'Portfolio
   transactions, reporting, and more.
 Imports: NMOF, datetimeutils, fastmatch, orgutils, parallel, textutils,
         utils, zoo
-Suggests: RUnit, crayon, rbenchmark
+Suggests: crayon, rbenchmark, tinytest
 Depends: R (>= 2.10)
 License: GPL-3
 LazyLoad: yes
@@ -25,7 +25,7 @@ URL: http://enricoschumann.net/PMwR/,
         https://github.com/enricoschumann/PMwR,
         https://gitlab.com/enricoschumann/PMwR
 NeedsCompilation: no
-Packaged: 2019-08-26 20:05:53 UTC; es19
+Packaged: 2020-03-11 19:56:00 UTC; es19
 Author: Enrico Schumann [aut, cre] (<https://orcid.org/0000-0001-7601-6576>)
 Repository: CRAN
-Date/Publication: 2019-08-26 20:30:03 UTC
+Date/Publication: 2020-03-11 20:10:02 UTC

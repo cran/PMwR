@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-19  Enrico Schumann
+## Copyright (C) 2008-20  Enrico Schumann
 
 returns <- function(x, ...)
     UseMethod("returns")
@@ -16,6 +16,9 @@ returns.default <- function(x, t = NULL, period = NULL,
         warning("time-weighted returns not supported (currently), ",
                 "so position is ignored")
     }
+
+    if (!is.null(period) && period == "total")
+        period <- "itd"
 
     if (is.unsorted(t)) {  ## this works because
         idx <- order(t)    ## is.unsorted(NULL) == FALSE
@@ -142,7 +145,7 @@ returns.data.frame <- function(x, t = NULL, period = NULL,
                            weights = weights,
                            rebalance.when = rebalance.when,
                            lag = lag, ...)
-    as.data.frame(ans)
+    ans
 }
 
 .returns <- function(x, pad = NULL, lag) {
@@ -724,23 +727,24 @@ returns_rebalance <- function(prices, weights,
         weights <- tmp
     }
 
-
     val <- numeric(nr) + 1
     h <- ctb <- array(0, dim = dim(prices))
 
     if (any(when)) {
         first <- which(when)[1L]
         val[seq(to = first)] <- 1
+        cash <- 1 - sum(weights[first, ])
         h[first, ] <- weights[first, ]/prices[first, ]
 
         if (first < nr)
             for (i in (first+1):nr) {
-                val[i] <- sum(prices[i, ] * h[i-1, ])
+                val[i] <- sum(prices[i, ] * h[i-1, ]) + cash
                 ctb[i, ] <- (prices[i, ]-prices[i-1, ]) *
                     h[i-1, ] / val[i-1]
-                if (when[i])
+                if (when[i]) {
                     h[i, ] <- val[i] * weights[i, ]/prices[i, ]
-                else
+                    cash <- val[i] - sum(weights[i, ])*val[i]
+                } else
                     h[i, ] <- h[i - 1, ]
             }
     }
@@ -760,7 +764,9 @@ rc <- function(R, weights, timestamp, segments = NULL) {
                         cr
                     else
                         paste0("segment_", 1:ncol(weights))
-    }
+    } else if (length(segments) != ncol(R))
+        warning("length(segments) != ncol(R)")
+
     if (missing(timestamp))
         timestamp <- 1:nrow(R)
     ns <- length(segments)
