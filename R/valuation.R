@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-19  Enrico Schumann
+## Copyright (C) 2008-20  Enrico Schumann
 
 valuation <- function(x, ...)
     UseMethod("valuation")
@@ -83,9 +83,14 @@ jcf <- function(x, multiplier = 1,
     ans
 }
 
-valuation.position <- function(x, price.table, multiplier = 1,
-                               do.sum = FALSE, price.unit,
-                               verbose = TRUE, do.warn = TRUE, ...) {
+valuation.position <- function(x,
+                               vprice,
+                               multiplier = 1,
+                               do.sum = FALSE,
+                               price.unit,
+                               use.names = FALSE,
+                               verbose = TRUE,
+                               do.warn = TRUE, ...) {
 
     instrument <- attr(x, "instrument")
 
@@ -95,21 +100,40 @@ valuation.position <- function(x, price.table, multiplier = 1,
     if (do.warn && any(is.na(multiplier))) {
         warning("NAs in ", sQuote("multiplier"))
     }
+    if (use.names &&
+        !is.null(dim(vprice))) {
+        vprice <- vprice[, instrument]
+    }
+    if (use.names &&
+        nrow(x) == 1L &&
+        is.null(dim(vprice)) &&
+        !is.null(names(vprice)) &&
+        !all(is.na(instrument))) {
+        vprice_ <- rep(NA_real_, ncol(x))
+        names(vprice_) <- instrument
+        ii <- instrument %in% names(vprice)
+        vprice_[ii] <- vprice[instrument[ii]]
+        vprice <- t(vprice_)
+    }
+
+    if (!all(dim(vprice) == dim(x)))
+        warning("dimensions of position and ", sQuote("vprice"), " differ")
 
     pos <- x != 0
-    miss <- which(is.na(price.table) & pos, TRUE)
+    is.na.prices <- is.na(vprice)
+    miss <- which(is.na.prices & pos, TRUE)
     if (do.warn && nrow(miss)) {
         warning("missing prices")
         if (verbose) {
             for (i in seq_len(ncol(x)))
-                if (any(pos[, i]) && all(miss[, i]))
+                if (any(pos[, i]) && all(is.na.prices[, i]))
                     warning("no prices at all for ", instrument[i])
             print(data.frame(timestamp  = .timestamp(x)[miss[, 1L]],
                              instrument = instrument(x)[miss[, 2L]]))
         }
     }
-    price.table[!pos] <- 0
-    ans <- as.matrix(x) * price.table
+    vprice[!pos] <- 0
+    ans <- as.matrix(x) * vprice
     if (any(multiplier != 1))
         ans <- ans %*% diag(multiplier, length(instrument))
 
@@ -122,7 +146,7 @@ valuation.position <- function(x, price.table, multiplier = 1,
 }
 
 ## TODO: use valuation instead
-pv <- function(x, multiplier = 1, price.table, price.unit,
+pv <- function(x, multiplier = 1, vprice, price.unit,
                do.sum = FALSE, ...) {
 
     instrument <- attr(x, "instrument")
@@ -130,7 +154,7 @@ pv <- function(x, multiplier = 1, price.table, price.unit,
     if (!is.null(names(multiplier)))
         multiplier <- multiplier[instrument]
 
-    ans <- x * price.table
+    ans <- x * vprice
     if (any(multiplier != 1))
         ans <- ans %*% diag(multiplier, length(instrument))
 

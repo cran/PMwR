@@ -38,14 +38,14 @@ journal.default <- function(amount, price, timestamp, instrument,
     }
 
     if (missing(timestamp))
-        timestamp <- NA
+        timestamp <- NA_real_
     if (missing(instrument) || all(is.na(instrument)))
-        instrument <- NA
+        instrument <- NA_character_
     else if (!any(is.na(instrument)) &&
              all(instrument == instrument[1L]))
         instrument <- instrument[1L]
     if (missing(price))
-        price <- NA
+        price <- NA_real_
     instrument <- as.character(instrument)
 
 
@@ -57,12 +57,13 @@ journal.default <- function(amount, price, timestamp, instrument,
                length(account),
                if (length(dots)) max(lengths(dots)))
 
-    ans <- list(id         = rep(id,         len/length(id)),
-                instrument = rep(instrument, len/length(instrument)),
-                account    = rep(account,    len/length(account)),
-                timestamp  = rep(timestamp,  len/length(timestamp)),
-                amount     = rep(amount,     len/length(amount)),
-                price      = rep(price,      len/length(price)))
+    ans <- list(
+        id         = if ((n <- len/length(id)) == 1)         id else rep(id, n),
+        instrument = if ((n <- len/length(instrument)) == 1) instrument else rep(instrument, n),
+        account    = if ((n <- len/length(account)) == 1)    account else rep(account, n),
+        timestamp  = if ((n <- len/length(timestamp)) == 1)  timestamp else rep(timestamp, n),
+        amount     = if ((n <- len/length(amount)) == 1)     amount else rep(amount, n),
+        price      = if ((n <- len/length(price)) == 1)      price else rep(price, n))
 
     ## remove NULL
     isNul <- unlist(lapply(ans, is.null))
@@ -272,75 +273,108 @@ instrument.journal <- function(x, ...) {
 }
 
 summary.journal <- function(object,
-                            by.timestamp = FALSE,
-                            by.instrument = FALSE,
+                            by = "instrument",
                             drop.zero = TRUE,
-                            sort.order = c("year", "month", "instrument"),
+                            na.rm = FALSE,
                             ...) {
-    ans <- list()
-    ans$n_transactions <- length(object)
-    if (ans$n_transactions == 0L) {
-        ans$stats <- NA
-        class(ans) <- "summary.journal"
+
+    if (length(object) == 0L) {
+        ans <- structure(list(n = numeric(0),
+                              average_buy = numeric(0),
+                              average_sell = numeric(0),
+                              turnover = numeric(0),
+                              first_t = numeric(0),
+                              last_t = numeric(0)),
+                         class = "data.frame",
+                         row.names = integer(0))
+        class(ans) <- c("summary.journal", "data.frame")
         return(ans)
     }
 
-    ## TODO aggregation level? instrument or account or factor ...
-    INDEX <- NULL
-
-    if (isTRUE(by.timestamp)) {
-        by.timestamp <- object$timestamp
-        tmp <- .may_be_Date(by.timestamp)
-        if (tmp) {
-            tmp <- attr(tmp, "Date")
-            INDEX <- c(INDEX,
-                       list(year = datetimeutils::year(tmp),
-                            month = datetimeutils::month(tmp)))
-        }
-    }
-
     no_instrument <- FALSE
-    if (all(is.na(xi <- instrument(object)))) {
-        xi <- object$instrument <- rep("_", length(object))
+    if (all(is.na(instrument(object)))) {
+        object$instrument <- rep("___", length(object))
         no_instrument <- TRUE
     }
-    if (isTRUE(by.instrument))
-        INDEX <- c(INDEX,
-                   instrument = list(object$instrument))
 
 
-    if (is.null(INDEX))
-        INDEX <- rep(1, ans$n_transactions)
+    ## TODO aggregation level? instrument or account or factor ...
+    INDEX <- NULL
+    INDEX.names <- NULL
+    if (!is.list(by)) {
+        ## TODO date timestamp month hour quarter day
+        if ("instrument" %in% by) {
+            INDEX <- c(INDEX, instrument = list(object$instrument))
+            INDEX.names <- c(INDEX.names, "instrument")
+        }
+        if ("year" %in% by) {
+            INDEX <- c(INDEX, year = list(format(object$timestamp, "%Y")))
+            INDEX.names <- c(INDEX.names, "year")
+        }
+        if ("month" %in% by) {
+            INDEX <- c(INDEX, month = list(format(object$timestamp, "%m")))
+            INDEX.names <- c(INDEX.names, "month")
+        }
+        if ("date" %in% by) {
+            INDEX <- c(INDEX, date = as.Date(object$timestamp))
+            INDEX.names <- c(INDEX.names, "month")
+        }
+    } else {
+        INDEX <- by
+        INDEX.names <- names(by)
+    }
+
+    ## if (isTRUE(by.timestamp)) {
+    ##     by.timestamp <- object$timestamp
+    ##     tmp <- .may_be_Date(by.timestamp)
+    ##     if (tmp) {
+    ##         tmp <- attr(tmp, "Date")
+    ##         INDEX <- c(INDEX,
+    ##                    list(year = datetimeutils::year(tmp),
+    ##                         month = datetimeutils::month(tmp)))
+    ##     }
+    ## }
+
+    ## if (isTRUE(by.instrument))
+    ##     INDEX <- c(INDEX,
+    ##                instrument = list(object$instrument))
+
+
+    ## if (is.null(INDEX))
+    ##     INDEX <- rep(1, ans$n_transactions)
 
     stats <- as.data.frame(table(INDEX),
                            responseName = "n_transactions0",
                            stringsAsFactors = FALSE)
-    if ("month" %in% colnames(stats) &&
-        is.character(stats[["month"]]) &&
-        all(stats[["month"]] %in% as.character(1:12)))
-        stats[["month"]] <- as.numeric(stats[["month"]])
-    if ("year" %in% colnames(stats) &&
-        is.character(stats[["year"]]) &&
-        all(stats[["year"]] %in% as.character(1:12)))
-        stats[["year"]] <- as.numeric(stats[["year"]])
+    ## if ("month" %in% colnames(stats) &&
+    ##     is.character(stats[["month"]]) &&
+    ##     all(stats[["month"]] %in% as.character(1:12)))
+    ##     stats[["month"]] <- as.numeric(stats[["month"]])
+    ## if ("year" %in% colnames(stats) &&
+    ##     is.character(stats[["year"]]) &&
+    ##     all(stats[["year"]] %in% as.character(1:12)))
+    ##     stats[["year"]] <- as.numeric(stats[["year"]])
 
 
     stats <- data.frame(stats,
-                        n_transactions = as.matrix(
+                        n = as.matrix(
                             c(tapply(object$amount, INDEX = INDEX,
-                                   length, default = 0))),
+                                     length, default = 0))),
                         average_buy = as.matrix(
                             c(tapply(
                                 object, INDEX = INDEX,
-                                function(x) mean(x$price[x$amount > 0], na.rm = TRUE)))),
+                                function(x)
+                                sum(x$price[x$amount > 0] * x$amount[x$amount > 0], na.rm = na.rm) / sum(x$amount[x$amount > 0])))),
                         average_sell = as.matrix(
                             c(tapply(
                                 object, INDEX = INDEX,
-                                function(x) mean(x$price[x$amount < 0], na.rm = TRUE)))),
+                                function(x)
+                                sum(x$price[x$amount < 0] * x$amount[x$amount < 0], na.rm = na.rm) / sum(x$amount[x$amount < 0])))),
                         turnover = as.matrix(
                             c(tapply(
                                 object, INDEX = INDEX,
-                                function(x) sum(x$price * abs(x$amount))))),
+                                function(x)
+                                sum(x$price * abs(x$amount))))),
                         first_t = as.matrix(
                             c(tapply(
                                 object$timestamp, INDEX = INDEX, min))),
@@ -349,7 +383,6 @@ summary.journal <- function(object,
                                 object$timestamp, INDEX = INDEX, min))),
                         stringsAsFactors = FALSE)
 
-    stopifnot(all(stats$n_transactions0 == stats$n_transctions))
     stats$n_transactions0 <- NULL
 
     if (!is.null(stats[["first_t"]]))
@@ -357,22 +390,22 @@ summary.journal <- function(object,
             class(stats[["last_t"]]) <- class(object$timestamp)
 
     if (drop.zero)
-        stats <- stats[stats$n_transactions > 0L, ]
+        stats <- stats[stats$n > 0L, ]
 
-    ## sort.order <- c("year", "month", "instrument")
-    for (i in rev(seq_along(sort.order))) {
-        if (!sort.order[i] %in% colnames(stats))
-            sort.order <- sort.order[-i]
-    }
-
-    if (length(sort.order))
-        stats <- stats[do.call(order, stats[, sort.order]), ]
+    if (length(INDEX) == 1L && !is.null(INDEX.names))
+        colnames(stats)[colnames(stats) == "INDEX"] <- INDEX.names
 
     if (no_instrument)
         stats$instrument <- NA
-    ans$stats  <- stats
-    class(ans) <- "summary.journal"
-    ans
+
+    ## sort
+    if (!is.null(by))
+        for (b in INDEX.names)
+            if (!is.null(stats[[b]]))
+                stats <- stats[order(stats[[b]]), ]
+
+    class(stats) <- c("summary.journal", "data.frame")
+    stats
 }
 
 .repeated <- function(x, ...)
@@ -381,14 +414,14 @@ summary.journal <- function(object,
 print.summary.journal <- function(x, month.names = month.abb,
                                   digits = NULL, na.print = "",
                                   use.crayon = NULL, ...) {
-    if (x$n_transactions > 0L) {
-        stats <- x$stats
-        has_instrument <- !all(is.na(x$stats$instrument))
+    if (nrow(x) > 0L) {
+        stats <- x
+        has_instrument <- !all(is.na(stats$instrument))
         if (!has_instrument)
             stats$instrument <- NULL
-        msg <- c("journal: ", x$n_transactions, " transactions ")
+        msg <- c("journal: ", sum(x$n), " transactions ")
         if (has_instrument) {
-            if ( (ni <- length(unique(x$stats$instrument))) != 1L )
+            if ( (ni <- length(unique(x$instrument))) != 1L )
                 msg <- c(msg, "in ", ni, " instruments")
             else
                 msg <- c(msg, "in 1 instrument")
@@ -539,11 +572,19 @@ split.journal <- function(x, f, drop = FALSE, ...) {
            function(ind) x[ind])
 }
 
-head.journal <- function(x, n = 6L, ..., by = TRUE) {
+
+
+## ================= [ head, tail ] =================
+
+head.journal <- function(x, n = 6L, ..., by = "instrument") {
+    if (is.null(by))
+        by <- FALSE
+    if (isTRUE(by))
+        by <- "instrument"
     if ((lenx <- length(x)) <= 1L)
         return(x)
     x <- sort(x)
-    if (by) {
+    if (by == "instrument") {
         insts <- sort(unique(x$instrument))
         ans <- journal()
         for (i in insts) {
@@ -558,11 +599,15 @@ head.journal <- function(x, n = 6L, ..., by = TRUE) {
     }
 }
 
-tail.journal <- function(x, n = 6L, ..., by = TRUE) {
+tail.journal <- function(x, n = 6L, ..., by = "instrument") {
+    if (is.null(by))
+        by <- FALSE
+    if (isTRUE(by))
+        by <- "instrument"
     if ((lenx <- length(x)) <= 1L)
         return(x)
     x <- sort(x, decreasing = TRUE)
-    if (by) {
+    if (by == "instrument") {
         insts <- sort(unique(x$instrument))
         ans <- journal()
         for (i in insts) {
@@ -576,18 +621,6 @@ tail.journal <- function(x, n = 6L, ..., by = TRUE) {
         x[(lenx - min(n, lenx) + 1L):lenx]
     }
 }
-
-cashflows <- function(x, multiplier = 1, ...) {
-
-    if (!is.null(names(multiplier)))
-        multiplier <- multiplier[x$instrument]
-    ans <- x
-    ans$instrument <- "cash"
-    ans$amount <- -x$amount * x$price * multiplier
-    ans$price <- 1
-    ans
-}
-
 
 
 
@@ -745,4 +778,16 @@ all.equal.journal <- function(target, current,
     else
         msg
 
+}
+
+
+cashflows <- function(x, multiplier = 1, ...) {
+
+    if (!is.null(names(multiplier)))
+        multiplier <- multiplier[x$instrument]
+    ans <- x
+    ans$instrument <- "cash"
+    ans$amount <- -x$amount * x$price * multiplier
+    ans$price <- 1
+    ans
 }

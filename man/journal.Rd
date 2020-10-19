@@ -45,6 +45,9 @@ is.journal(x)
 
 \method{sort}{journal}(x, decreasing = FALSE, by = "timestamp", \dots, na.last = TRUE)
 
+\method{summary}{journal}(object, by = "instrument", drop.zero = TRUE,
+      na.rm = FALSE, \dots)
+
 \method{subset}{journal}(x, \dots)
 
 \method{[}{journal}(x, i, match.against = NULL,
@@ -56,9 +59,9 @@ is.journal(x)
 
 \method{as.data.frame}{journal}(x, row.names = NULL, optional = FALSE, \dots)
 
-\method{head}{journal}(x, n = 6L, \dots, by = TRUE)
+\method{head}{journal}(x, n = 6L, \dots, by = "instrument")
 
-\method{tail}{journal}(x, n = 6L, \dots, by = TRUE)
+\method{tail}{journal}(x, n = 6L, \dots, by = "instrument")
 
 }
 \arguments{
@@ -99,6 +102,12 @@ is.journal(x)
     \code{is.journal})
 
   }
+
+  \item{object}{
+
+      a \code{journal}
+  }
+
   \item{width}{
     integer. See \code{\link{options}}.
   }
@@ -106,8 +115,16 @@ is.journal(x)
     passed to \code{\link{sort}}
   }
   \item{by}{
-    \code{sort}: sort by field. \code{head}/\code{tail}: by instrument.
+    \code{sort}: sort by field. \code{head}/\code{tail}: by field
+    (default is instrument).
+    \code{summary}: a vector of keywords (or \code{NULL}); supported are
+    \code{"instrument"}, \code{"year"} and \code{"month"}.
   }
+
+  \item{na.rm}{logical}
+
+  \item{drop.zero}{logical}
+
   \item{na.last}{
     arguments passed to sort
   }

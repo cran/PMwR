@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-19  Enrico Schumann
+## Copyright (C) 2008-20  Enrico Schumann
 
 pl <- function(amount, ...)
     UseMethod("pl")
@@ -172,6 +172,12 @@ pl.default <- function(amount, price, timestamp = NULL,
         if (nrow(vprice) != length(along.timestamp))
             stop("lengths of ", sQuote("vprice"), " and ",
                  sQuote("along.timestamp"), " differ")
+
+        if (is.unsorted(along.timestamp)) {
+            io <- order(along.timestamp)
+            along.timestamp <- along.timestamp[io]
+            vprice <- vprice[io, , drop = FALSE]
+        }
     }
 
     ## initial position should be a named vector
@@ -370,7 +376,7 @@ pl.default <- function(amount, price, timestamp = NULL,
                                 timestamp = c(timestamp1, timestamp1),
                                 instrument = c(rep(i1, length(amount1)),
                                                rep("cash", length(amount1))),
-                                when = along.timestamp)[, c(i1, "cash")]
+                                when = along.timestamp)[, c(i1, "cash"), drop = FALSE]
 
                 ## replace vprice1 with zero whenever there is no
                 ## position in instrument: NA values are ignored

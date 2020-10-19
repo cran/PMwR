@@ -74,7 +74,6 @@ timestamp.P <- structure(
       18305, 18306, 18310, 18311,
       18312, 18313), class = "Date")
 
-library("PMwR")
 J <- journal()
 for (asset in colnames(P)) {
 
@@ -193,10 +192,10 @@ position(J)
 pl(J, vprice = c(AMZN = 2020, MSFT = 178, AAPL = 311))
 
 
-str(timestamp.P)
+## str(timestamp.P)
 ## Date[1:66], format: "2019-11-15" "2019-11-18" ...
 
-str(P)
+## str(P)
 ## num [1:66, 1:3] 1739 1753 1753 1746 1735 ...
 ## - attr(*, "dimnames")=List of 2
 ##  ..$ : NULL
@@ -213,8 +212,7 @@ tail(PL, 5)
 ## 2020-02-20 347.1 -334.4   6.4
 ## 2020-02-21 202.1  236.9 -51.9
 
-library("datetimeutils")
-ii <- c(1, nth_day(timestamp.P,  ## extract position of last day of month
+ii <- c(1, datetimeutils::nth_day(timestamp.P,  ## extract position of last day of month
                    period = "month", n = "last",
                    index = TRUE))
 diff(PL[ii, ])
@@ -411,9 +409,6 @@ expect_equal(unlist(lapply(tmp, `[[`, "pl")), c(A=10,B=80))
 ## cumpos  <- cumsum(amount)
 ## pnl <- cumpos * price + cumcash
 
-
-## library("PMwR")
-## library("RUnit")
 
 ## multiplier
 expect_equal(pl(amount = c(1, -1),
@@ -646,3 +641,25 @@ expect_equal(pl(j, along.timestamp = timestamp, vprice = close)[[1]]$pl,
                                  "2007-08-30 17:24:00",
                                  "2007-08-31 09:00:00",
                                  "2007-08-31 10:00:00")))
+
+
+## --------------------------------
+
+## custom 'along.timestamp' for a single timestamp
+J <- journal(amount = c(1),
+             price = c(100),
+             timestamp = c(1))
+ans <- pl(J, along.timestamp = 1, vprice = 101)
+expect_equivalent(ans[[1]]$pl, 1)
+
+J <- journal(amount = c(1, -1),
+             price = c(100, 105),
+             timestamp = c(1,1))
+ans <- pl(J, along.timestamp = 1, vprice = 105)
+expect_equivalent(ans[[1]]$pl, 5)
+
+J <- journal(amount = c(1, -1),
+             price = c(100, 105),
+             timestamp = c(1,1))
+ans <- pl(J, along.timestamp = 1, vprice = 999)
+expect_equivalent(ans[[1]]$pl, 5)

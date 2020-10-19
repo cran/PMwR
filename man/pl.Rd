@@ -42,54 +42,48 @@ pl(amount, \dots )
 
 }
 \arguments{
-  \item{amount}{
-    numeric or a \code{\link{journal}}
-  }
-  \item{price}{
-    numeric
-  }
-  \item{instrument}{
 
-    character or numeric (though typically character)
+  \item{amount}{numeric or a \code{\link{journal}}}
 
+  \item{price}{numeric}
+
+  \item{instrument}{character or numeric (though
+    typically character)}
+
+  \item{timestamp}{An atomic vector of mode
+    \code{\link{numeric}} or \code{\link{character}}.
+    Timestamps should typically be sortable.}
+
+  \item{along.timestamp}{logical; or a a vector of
+    timestamps. If the latter, \code{vprice} must be
+    specified as well. See the vignette
+    \dQuote{Profit/Loss for Open Positions}
+    (\code{pl_open_positions}) for details.  Timestamps
+    must be in ascending order and will be sorted if
+    they are not (and \code{vprice} will then be sorted
+    as well).}
+
+  \item{initial.position}{%
+    a \code{\link{position}}
   }
-  \item{timestamp}{
-
-    An atomic vector of mode \code{\link{numeric}} or
-    \code{\link{character}}.  Timestamps should
-    typically be sortable.
-
+  \item{initial.price}{%
+    prices to evaluate initial position
   }
-  \item{along.timestamp}{
+  \item{vprice}{%
 
-    logical; or a a vector of timestamps. If the latter,
-    \code{vprice} must be specified as well. See the vignette
-    \dQuote{Profit/Loss for Open Positions} (\code{pl_open_positions})
-    for details.
-
-  }
-  \item{initial.position}{
-    a \code{\link{position}}.
-  }
-  \item{initial.price}{
-    prices to evaluate initial position.
-  }
-  \item{vprice}{
-
-    valuation price; a numeric vector. With several
-    instruments, the prices must be named,
-    e.g. \code{c(stock1 = 100, stock2 = 101)}. See
-    Details.
+    valuation price; a numeric vector. With several instruments, the
+    prices must be named, e.g. \code{c(stock1 = 100, stock2 = 101)}.
+    See Details.
 
   }
-  \item{multiplier}{
+  \item{multiplier}{%
 
     numeric vector. When \code{instrument} is specified
     and the vector is named, the names will be matched
     against instruments.
 
   }
-  \item{multiplier.regexp}{
+  \item{multiplier.regexp}{%
 
     logical. If \code{TRUE}, the names of
     \code{multiplier} are interpreted as regular
@@ -106,30 +100,35 @@ pl(amount, \dots )
   \item{do.sum}{logical: sum profit/loss across instruments?}
   \item{pl.only}{logical: if \code{TRUE}, return only
     numeric vector of profit/loss}
-  \item{footnotes}{logical, with default \code{TRUE}:
+  \item{footnotes}{%
+    logical, with default \code{TRUE}:
     collect and print notes?}
 }
 \details{
 
   Computes profit and/or loss and returns a list with
-  several statistics (see Section Value, below). To get
-  only the profit/loss numbers as a numeric vector,
-  set argument \code{pl.only} to \code{TRUE}.
+  several statistics (see Section Value, below). To get only
+  the profit/loss numbers as a numeric vector, set argument
+  \code{pl.only} to \code{TRUE}.
 
   \code{pl} is a generic function: The default input is
-  vectors for amount, price, etc. Alternatively (and
-  often more conveniently), the function may also be
-  called with a \code{\link{journal}} or a
-  \code{\link{data.frame}} as its input. For data
-  frames, columns must be named \code{amount},
-  \code{price}, and so on, as in a \code{\link{journal}}.
+  vectors for amount, price, etc. Alternatively (and often
+  more conveniently), the function may also be called with a
+  \code{\link{journal}} or a \code{\link{data.frame}} as its
+  input. For data frames, columns must be named
+  \code{amount}, \code{price}, and so on, as in a
+  \code{\link{journal}}.
 
   \code{pl} may be called in two ways: either to compute
   \emph{total profit/loss} from a list of trades, possibly
-  broken down by \code{instrument} and \code{account};
-  or to compute \emph{profit/loss over time}. The latter case
-  typically requires setting arguments \code{along.timestamp}
-  and/or \code{vprice} (see Examples).
+  broken down by \code{instrument} and \code{account}; or to
+  compute \emph{profit/loss over time}. The latter case
+  typically requires setting arguments
+  \code{along.timestamp} and/or \code{vprice} (see
+  Examples).  Profit/loss over time is always computed with
+  time in ascending order: so if the timestamps in
+  \code{along.timestamp} are not sorted, the function will
+  sort them (and \code{vprice} as well).
 
   Using \code{vprice}: when \code{along.timestamp} is
   logical (\code{FALSE} or \code{TRUE}),
@@ -166,7 +165,7 @@ pl(amount, \dots )
 
 }
 \references{
-Schumann, E. (2019) \emph{Portfolio Management
+Schumann, E. (2020) \emph{Portfolio Management
   with R}. \url{http://enricoschumann.net/PMwR/}
 
 }
@@ -207,12 +206,23 @@ pl(J)
 ## 'P/L total' is in units of instrument;
 ## 'volume' is sum of /absolute/ amounts.
 
-as.data.frame(pl(J))
+as.data.frame(pl(J))  ## a single data.frame
 ##        pl buy sell volume
 ## Bond A  0 101  101      4
 ## Bond B  8 101  105      4
 
+lapply(pl(J), as.data.frame)  ## => a list of data.frames
+## $`Bond A`
+##   pl realised unrealised buy sell volume
+## 1  0       NA         NA 101  101      4
+##
+## $`Bond B`
+##   pl realised unrealised buy sell volume
+## 1  8       NA         NA 101  105      4
+
 pl(pl(J))  ## P/L as a numeric vector
+## Bond A Bond B
+##      0      8
 
 
 

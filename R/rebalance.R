@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-19  Enrico Schumann
+## Copyright (C) 2008-20  Enrico Schumann
 
 rebalance <- function(current,
                       target,
@@ -11,7 +11,10 @@ rebalance <- function(current,
                       fraction = 1,
                       drop.zero = FALSE,
                       current.weights = FALSE,
-                      target.weights = TRUE) {
+                      target.weights = TRUE##,
+                      ## algorithm = NULL,
+                      ## algorithm.control = NULL
+                      ) {
 
     if (inherits(current, "position")) {
         instr <- attr(current, "instrument")
@@ -90,7 +93,7 @@ rebalance <- function(current,
             warning("instrument in current without price: ",
                     if (sum(miss.name) > 3) "\n",
                     paste(names(current)[miss.name],
-                          collapse = if (sum(miss.name) > 3) "\n" else ","),
+                          collapse = if (sum(miss.name) > 3) "\n" else ", "),
                     immediate. = TRUE)
         }
         if (any(miss.name <- is.na(match(names(target),
@@ -98,9 +101,18 @@ rebalance <- function(current,
             warning("instrument in target without price: ",
                     if (sum(miss.name) > 3) "\n",
                     paste(names(current)[miss.name],
-                          collapse = if (sum(miss.name) > 3) "\n" else ","),
+                          collapse = if (sum(miss.name) > 3) "\n" else ", "),
                     immediate. = TRUE)
         }
+        if (any(miss.price <- is.na(price))) {
+            warning("NAs in prices: ",
+                    if (sum(miss.price) > 3) "\n",
+                    paste(names(price)[miss.price],
+                          collapse = if (sum(miss.price) > 3) "\n" else ", "),
+                    immediate. = TRUE)
+        }
+
+        ## set up vectors that match __by position__
         all.names <- sort(unique(
             c(names(target), names(current))))
         multiplier <- multiplier[all.names]
@@ -133,6 +145,10 @@ rebalance <- function(current,
                             multiplier)
     }
 
+    ## if (!is.null(algorithm)) {
+        ## 
+    ## }
+    
     if (current.weights)
         current <- notional*current/
             price/multiplier

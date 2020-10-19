@@ -1,6 +1,89 @@
+2020-10-19  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Version): 0.15-0
+
+2020-10-14  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/journal.R (head.journal, tail.journal): set
+        default value for argument 'by' to
+        "instrument"; if 'by' is TRUE (the old
+        default), set it to "instrument"
+
+2020-10-12  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/journal.R (summary.journal): rewrite and
+        document method
+
+2020-10-10  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/position.R (position): support "endofyear"
+        as keyword for 'when'
+
+2020-10-01  Enrico Schumann  <es@enricoschumann.net>
+
+        * inst/tinytest/test_is_valid_SEDOL.R: add tests
+
+2020-09-25  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/is_valid_ISIN.R (is_valid_SEDOL): add function
+
+2020-08-22  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/valuation.R (valuation): rename argument
+
+            price.table      =>  vprice
+
+        * R/pricetable.R (`[.pricetable`): subsetting a
+        pricetable gains a new argument 'as.matrix', with
+        default TRUE.
+
+        * R/pl.R (pl.default): check if custom
+        valuation dates passed via 'along.timestamp'
+        are in ascending order (and sort them if they
+        are not)
+
+2020-08-12  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/journal.R (journal.default): do not recycle
+        journal inputs (i.e. do not use 'rep') when
+        they already are of appropriate length
+
+2020-08-09  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Depends): require at least R
+        version 3.2, which was released in 2015 ('lengths'
+        was added in that version)
+
+2020-05-26  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/valuation.R (valuation.position): add
+        argument 'use.names'. If TRUE, the (column)
+        names of 'price.table' are matched against
+        'instrument'.
+
+2020-05-17  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/pl.R (pl): fix profit/loss computation when
+        'along.timestamp' specifies a single timestamp
+
+2020-05-16  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/valuation.R (valuation.position): for a
+        single timestamp and a named position,
+        'price.table' may now also be a named vector;
+        see Examples in ?valuation
+
+2020-04-29  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/rebalance.R (rebalance): warn about NAs in
+        'price' vector
+
+        * R/scale1.R (scale1.zoo): fix handling of
+        'zoo' series when index is of class 'character'
+
 2020-03-11  Enrico Schumann  <es@enricoschumann.net>
 
-        * DESCRIPTION (Version): Version: 0.14-0
+        * DESCRIPTION (Version): 0.14-0
 
 2020-03-10  Enrico Schumann  <es@enricoschumann.net>
 

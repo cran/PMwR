@@ -11,6 +11,7 @@ importFrom(textutils, toHTML)
 importFrom(textutils, toText)
 importFrom(textutils, valign)
 importFrom(datetimeutils, end_of_month)
+importFrom(datetimeutils, end_of_year)
 importFrom(datetimeutils, first_of_month)
 importFrom(datetimeutils, roundPOSIXt)
 importFrom(datetimeutils, timegrid)
@@ -48,6 +49,7 @@ export(
     instrument,
     is.journal,
     is_valid_ISIN,
+    is_valid_SEDOL,
     journal,
     limit,
     pl,
