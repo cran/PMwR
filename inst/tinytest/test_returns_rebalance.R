@@ -14,8 +14,7 @@ weights <- c(0.8, 0.2)
 ans <- returns(prices, weights = weights,
                rebalance.when = 2)
 tmp <- returns(prices %*% (weights/prices[2, ]))
-tmp[1] <- 0
-expect_equivalent(ans, drop(tmp))
+expect_equivalent(ans, drop(tmp)[-1])
 
 weights <- c(0.8, 0.2)
 ans <- returns(prices,
@@ -71,6 +70,7 @@ expect_equal(
 
 
 ## ... with zoo
+library("zoo", warn.conflicts = FALSE, quietly = TRUE)
 expect_equal(returns(zoo(x,t))[,1],
              c(returns(zoo(x,t), weights = c(1,0))))
 expect_equal(returns(zoo(x,t))[,2],
@@ -165,3 +165,202 @@ expect_equal(
 ##             rowSums((price*pos1 / rowSums(price*pos1))[-3, ] * returns(price)))
 ## expect_equal(returns(price, position = pos1),
 ##             returns(price, position = pos2))
+
+
+## position: 1 asset
+prices <- cbind(a = 101:105, b = 201:205)
+when <- 1
+
+pos <- c(1, 0)
+target <- returns(prices[, 1])
+expect_equivalent(returns(prices, position = pos, rebalance.when = when),
+                  target)
+
+pos <- c(0, 1)
+target <- returns(prices[, 2])
+expect_equivalent(returns(prices, position = pos, rebalance.when = when),
+                  target)
+
+pos <- c(0, 0)
+target <- numeric(nrow(prices) - 1)
+expect_equivalent(returns(prices, position = pos, rebalance.when = when),
+                  target)
+
+##
+when <- 2
+
+pos <- c(1, 0)
+target <- returns(prices[, 1])[-1]
+expect_equivalent(returns(prices, position = pos, rebalance.when = when),
+                  target)
+
+pos <- c(0, 1)
+target <- returns(prices[, 2])[-1]
+expect_equivalent(returns(prices, position = pos, rebalance.when = when),
+                  target)
+
+pos <- c(0, 0)
+target <- numeric(nrow(prices) - 1)[-1]
+expect_equivalent(returns(prices, position = pos, rebalance.when = when),
+                  target)
+
+
+
+## position: 2 assets
+prices <- cbind(a = 101:105, b = 201:205)
+pos <- rbind(c(1,0),
+             c(1,2))
+when <- c(1, 3)
+
+target <- c(returns(prices[,1])[1:2],
+            returns(prices %*% c(1,2))[3:4])
+expect_equivalent(returns(prices,
+                          position = pos,
+                          rebalance.when = when),
+                  target)
+
+## ------ zero positions ----------------------------------------
+##... ==> no "rebalance.when"
+
+prices <- cbind(a = 101:105, b = 201:205)
+pos <- rbind(c(0,0))
+
+target <- rep(0, nrow(prices) - 1)
+expect_equivalent(returns(prices,
+                          position = pos),
+                  target)
+expect_equivalent(returns(prices,
+                          weights = pos),
+                  target)
+
+target <- c(NA, rep(0, nrow(prices) - 1))
+expect_equivalent(returns(prices,
+                          position = pos,
+                          pad = NA),
+                  target)
+expect_equivalent(returns(prices,
+                          weights = pos,
+                          pad = NA),
+                  target)
+
+##... ==> with "rebalance.when"
+
+prices <- cbind(a = 101:105, b = 201:205)
+pos <- rbind(c(0,0))
+
+target <- rep(0, nrow(prices) - 1)
+expect_equivalent(returns(prices,
+                          position = pos,
+                          rebalance.when = c(1, 3)),
+                  target)
+expect_equivalent(returns(prices,
+                          weights = pos,
+                          rebalance.when = c(1, 3)),
+                  target)
+
+target <- c(NA, rep(0, nrow(prices) - 1))
+expect_equivalent(returns(prices,
+                          position = pos,
+                          rebalance.when = c(1, 3),
+                          pad = NA),
+                  target)
+expect_equivalent(returns(prices,
+                          weights = pos,
+                          rebalance.when = c(1, 3),
+                          pad = NA),
+                  target)
+
+
+
+## ------ zero positions ----------------------------------------
+
+prices <- cbind(a = 101:105, b = 201:205)
+pos <- rbind(c(0.4, 0.2),
+             c(  0,   0))
+
+target <- c(sum((prices[2, ]/prices[1, ]-1)*pos[1, ]),
+            rep(0, nrow(prices) - 2))
+expect_equivalent(returns(prices,
+                          weights = pos,
+                          rebalance.when = c(1, 2)),
+                  target)
+
+target <- c(returns(colSums(t(prices) * pos[1, ]))[1],
+            rep(0, nrow(prices) - 2))
+expect_equivalent(returns(prices,
+                          position = pos,
+                          rebalance.when = c(1, 2)),
+                  target)
+
+target <- c(sum((prices[3, ]/prices[2, ]-1)*pos[1, ]),
+            rep(0, nrow(prices) - 3))
+expect_equivalent(returns(prices,
+                          weights = pos,
+                          rebalance.when = c(2, 3)),
+                  target)
+
+target <- c(returns(colSums(t(prices) * pos[1, ]))[2],
+            rep(0, nrow(prices) - 3))
+expect_equivalent(returns(prices,
+                          position = pos,
+                          rebalance.when = c(2, 3)),
+                  target)
+
+
+## ------ matching of timestamps --------------------------------
+
+prices <- cbind(a = 101:105, b = 201:205)
+pos <- rbind(c(0.4, 0.2),
+             c(0.3, 0.7))
+
+t <- as.Date("2015-1-1") + 1:nrow(prices)
+expect_equivalent(
+    returns(prices,
+            weights = pos,
+            rebalance.when = c(1, 3)),
+    returns(prices,
+            t = t,
+            weights = pos,
+            rebalance.when = t[c(1, 3)]))
+
+expect_equivalent(
+    returns(prices,
+            weights = pos,
+            rebalance.when = c(1, 3)),
+    returns(prices,
+            t = 2:6, ## <== integer
+            weights = pos,
+            rebalance.when = c(2L, 4L))) ## <== integer
+
+expect_equivalent(
+    returns(prices,
+            weights = pos,
+            rebalance.when = c(1, 3)),
+    returns(prices,
+            t = as.numeric(2:6), ## <== numeric
+            weights = pos,
+            rebalance.when = c(2L, 4L))) ## <== integer
+
+expect_equivalent(
+    returns(prices,
+            weights = pos,
+            rebalance.when = c(1, 3)),
+    returns(prices,
+            t = 2:6, ## <== integer
+            weights = pos,
+            rebalance.when = c(2, 4))) ## <== numeric
+
+
+## ------ weights for each row ----------------------------------
+
+prices <- cbind(a = 101:105, b = 201:205)
+w <- sample(1:9/10, size = length(prices), replace = TRUE)
+dim(w) <- dim(prices)
+
+expect_equivalent(
+    rowSums(returns(prices) * w[-nrow(w), ]),
+    returns(x = prices, weights = w))
+
+expect_equivalent(
+    rowSums(returns(prices) * w[-nrow(w), ]),
+    returns(x = prices, weights = w[-nrow(w), ]))

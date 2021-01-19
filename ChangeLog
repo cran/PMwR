@@ -1,3 +1,73 @@
+2021-01-19  Enrico Schumann  <es@enricoschumann.net>
+
+	* DESCRIPTION (Version): 0.16-0
+
+2021-01-17  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns.default): specially handle
+        numeric/integer timestamps, so that a numeric
+        'rebalance.when' will be matched against an
+        integer 't'
+
+2021-01-15  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns.default): coerce 'x' to
+        matrix if 'returns_position' is called
+
+2021-01-12  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns_position): zero positions
+        now correctly return zero returns (instead of NaN)
+
+2021-01-10  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/unit_prices.R (unit_prices): support 'cf.included'
+
+        * R/div_adjust.R (div_adjust): allow duplicated
+        timestamps, i.e. several payments on a single
+        date; update docs
+
+        * inst/tinytest/test_div_adjust.R: add tests
+        * inst/tinytest/test_split_adjust.R: add tests
+
+
+2021-01-02  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns_position): add internal
+        function for computing rebalanced returns, for
+        both fixed weights and fixed positions. No longer
+        use internal function 'returns_rebalance'.
+
+        * R/returns.R: remove 'twReturns'
+
+        * R/internal.R (.copy_fw, .copy_fw_matrix): add
+        internal functions
+
+2020-11-22  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/unit_prices.R (unit_prices): the function
+        now supports cashflows for different
+        ids/accounts, even on the same timestamp. Fewer
+        columns are now returned, with an attribute
+        'transactions' attached: a data.frame of the
+        transactions, for each id/account.
+
+        The old function definition can still be accessed
+        with
+            PMwR:::.unit_prices>
+        but this will be removed in a future version.
+
+        Argument 'cf.included' it not (yet) supported
+        right now.
+
+2020-10-20  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Version): 0.15-1
+
+        * R/div_adjust.R (div_adjust): fix handling of
+        dividends that include first observation as
+        timestamp
+
 2020-10-19  Enrico Schumann  <es@enricoschumann.net>
 
         * DESCRIPTION (Version): 0.15-0

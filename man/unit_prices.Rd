@@ -7,9 +7,10 @@
   Compute prices for a portfolio based on outstanding shares.
 }
 \usage{
-unit_prices(NAV, cashflows,
-            initial.price = 100, initial.shares = 0,
-            cf.included = FALSE)
+unit_prices(NAV,
+            cashflows,
+            initial.price, initial.shares = 0,
+            cf.included = TRUE)
 }
 \arguments{
   \item{NAV}{
@@ -31,6 +32,9 @@ unit_prices(NAV, cashflows,
 }
 \details{
 
+  \strong{This function is experimental, and its interface
+  is not stable.}
+
   The function may be used to compute the returns for a
   portfolio with external cashflows, i.e. what is
   usually called time-weighted returns.
@@ -48,18 +52,18 @@ unit_prices(NAV, cashflows,
 }
 \value{
   A data.frame
-  \item{timestamp}{}
+  \item{timestamp}{the timestamp}
   \item{NAV}{total NAV}
   \item{price}{NAV per share}
-  \item{shares}{outstanding shares before cashflows, used for valuation}
-  \item{cashflow}{external cashflows}
-  \item{new_shares}{shares add/subtracted}
-  \item{total_shares}{total outstanding shares after cashflows}
-  \item{NAV_after_cf}{total NAV after cashflows}
+  \item{units}{outstanding units (i.e. shares) after cashflows}
+
+  Attached as an attribute is a \code{\link{data.frame}}
+  \code{transactions}.
+
 }
 \references{
 
-  Schumann, E. (2018) \emph{Portfolio Management with
+  Schumann, E. (2020) \emph{Portfolio Management with
     \R}. \url{http://enricoschumann.net/PMwR/}
 
 }
@@ -70,15 +74,42 @@ unit_prices(NAV, cashflows,
   \code{\link{returns}}, \code{\link{pl}}
 }
 \examples{
-NAV <- data.frame(timestamp = seq(as.Date("2017-1-1"),
-                                  as.Date("2017-1-10"),
+NAV <- data.frame(timestamp = seq(as.Date("2017-01-01"),
+                                  as.Date("2017-01-10"),
                                   by = "1 day"),
-                  NAV = c(0,101:104,205:209))
+                  NAV = c(100:104, 205:209))
 
-cf <- data.frame(timestamp = c(as.Date("2017-1-1"),
-                               as.Date("2017-1-5")),
+cf <- data.frame(timestamp = c(as.Date("2017-01-01"),
+                               as.Date("2017-01-06")),
                  cashflow = c(100, 100))
 
-unit_prices(NAV, cf)
+unit_prices(NAV, cf, cf.included = TRUE)
+##     timestamp NAV    price    units
+## 1  2017-01-01 100 100.0000 1.000000
+## 2  2017-01-02 101 101.0000 1.000000
+## 3  2017-01-03 102 102.0000 1.000000
+## 4  2017-01-04 103 103.0000 1.000000
+## 5  2017-01-05 104 104.0000 1.000000
+## 6  2017-01-06 205 105.0000 1.952381
+## 7  2017-01-07 206 105.5122 1.952381
+## 8  2017-01-08 207 106.0244 1.952381
+## 9  2017-01-09 208 106.5366 1.952381
+## 10 2017-01-10 209 107.0488 1.952381
 
+\donttest{
+  ## behaviour prior to version 0.16-0:
+  PMwR:::.unit_prices(NAV, cf, cf.included = TRUE)
+  up <- unit_prices(NAV, cf, cf.included = TRUE)
+
+  old.cf <- rep(0, nrow(up))
+  old.cf[up$timestamp \%in\% cf$timestamp] <- cf$cashflow
+  old_up <- data.frame(timestamp = up$timestamp,
+                       NAV = up$NAV,
+                       price = up$price,
+                       shares = up$units - diff(c(0, up$units)),
+                       cashflow = old.cf,
+                       new_shares = diff(c(0, up$units)),
+                       total_shares = up$units,
+                       NAV_after_cf = up$NAV)
+}
 }

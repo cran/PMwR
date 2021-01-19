@@ -1,3 +1,33 @@
+v0.16-0  (2021-01-19)
+
+  o returns: computations for rebalanced portfolios are
+    more efficient, and function 'returns' now supports
+    both fixed weights and fixed positions.  When
+    calling 'returns' with 'rebalance.when' and
+    argument 'weights'/'position', the resulting
+    'contributions' no longer ignore argument 'pad'.
+
+  o 'unit_prices' now supports cashflows for different
+    ids/accounts, even on the same timestamp.  An
+    attribute 'transactions' is attached: a data.frame
+    of the transactions, for each id/account.
+    Redundant columns are no longer returned, but they
+    can easily be recovered (see Examples for
+    ?unit_prices).
+
+  o 'div_adjust' supports several payments on the
+    same timestamp
+
+  o various minor bug fixes and documentation updates.
+    See the ChangeLog for all details. The manual at
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
+    has also been updated.
+
+v0.15-1  (2020-10-20)
+
+  o div_adjust: fix handling of dividends that occur on
+    the first timestep
+
 v0.15-0  (2020-10-19)
 
   o 'valuation': argument 'price.table' has been renamed:
