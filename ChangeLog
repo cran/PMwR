@@ -1,6 +1,15 @@
+2021-09-18  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Version): 0.16-1
+
+        * R/position.R: convert to Date via as.POSIXlt(....).
+        This fixes computing dates from timestamps in
+        certain locales (timezones with large UTC offsets)
+        in case the "when" keyword was used.
+
 2021-01-19  Enrico Schumann  <es@enricoschumann.net>
 
-	* DESCRIPTION (Version): 0.16-0
+        * DESCRIPTION (Version): 0.16-0
 
 2021-01-17  Enrico Schumann  <es@enricoschumann.net>
 
