@@ -25,20 +25,20 @@ if (requireNamespace("tinytest")) {
     if (inherits(tinytest.results, "try-error"))
         nt <- "several hundred"
     else
-        nt <- nrow(as.data.frame(tinytest.results))
+        nt <- length(tinytest.results)
 } else
     nt <- "several hundred"
 
 
 ###################################################
-### code chunk number 4: An_overview_of_PMwR.Rnw:100-102 (eval = FALSE)
+### code chunk number 4: An_overview_of_PMwR.Rnw:99-101 (eval = FALSE)
 ###################################################
 ## install.packages('PMwR',
 ##                  repos = c('http://enricoschumann.net/R', getOption('repos')))
 
 
 ###################################################
-### code chunk number 5: An_overview_of_PMwR.Rnw:138-140 (eval = FALSE)
+### code chunk number 5: An_overview_of_PMwR.Rnw:144-146 (eval = FALSE)
 ###################################################
 ## utils::bug.report("[PMwR] Unexpected behaviour in function <XXX>",
 ##                   maintainer("PMwR"), package = "PMwR")

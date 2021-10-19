@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-20  Enrico Schumann
+## Copyright (C) 2008-21  Enrico Schumann
 
 rebalance <- function(current,
                       target,
@@ -113,8 +113,21 @@ rebalance <- function(current,
         }
 
         ## set up vectors that match __by position__
+
+        ## ---- collect all relevant names
         all.names <- sort(unique(
             c(names(target), names(current))))
+
+        ## ---- collect relevant multipliers
+        miss.mult <- !all.names %in% names(multiplier)
+        if (any(miss.mult)) {
+            warning("instrument without multiplier: ",
+                    if (sum(miss.mult) > 3) "\n",
+                    paste(all.names[miss.mult],
+                          collapse = if (sum(miss.mult) > 3) "\n" else ", "),
+                    immediate. = TRUE)
+        }
+
         multiplier <- multiplier[all.names]
         target_ <- current_ <- numeric(length(all.names))
         current_[match(names(current), all.names)] <- current
@@ -146,9 +159,9 @@ rebalance <- function(current,
     }
 
     ## if (!is.null(algorithm)) {
-        ## 
+        ##
     ## }
-    
+
     if (current.weights)
         current <- notional*current/
             price/multiplier
@@ -187,14 +200,21 @@ print.rebalance <- function(x, ..., drop.zero = TRUE) {
     all.names <- x[["instrument"]]
     if (all(is.na(all.names)))
         all.names <- seq_along(x$current)
+
+    multiplier <- attr(x, "multiplier")
+    multiplier <- if (attr(x, "match.names"))
+        multiplier[x$instrument]
+    else
+        multiplier[as.numeric(row.names(x))]
+
     df <- data.frame(price   = x$price,
                      current = x$current,
-                     value   = x$current * x$price, ## TODO multiplier
+                     value   = x$current * x$price * multiplier,
                      `%`     = format(100*x$current * x$price / attr(x, "notional"),
                                       nsmall = 1, digits = 1),
                      `  `    = format("     ", justify = "centre"),
                      target  = x$target,
-                     value   = x$target * x$price,
+                     value   = x$target * x$price * multiplier,
                      `%`     = format(100*x$target * x$price / attr(x, "notional"),
                                       nsmall = 1, digits = 1),
                      `  `    = format("     ", justify = "centre"),
@@ -207,8 +227,8 @@ print.rebalance <- function(x, ..., drop.zero = TRUE) {
     print(df, ...)
 
     cat("\nNotional: ", attr(x, "notional"),
-        ".  Target net amount : ", sum(x$target * x$price),
-        ".  Turnover (2-way): ", sum(abs(x$current - x$target) * x$price),
+        ".  Target net amount : ", sum(x$target * x$price * multiplier),
+        ".  Turnover (2-way): ", sum(abs(x$current - x$target) * x$price * multiplier),
         ".\n", sep = "")
     invisible(x)
 }

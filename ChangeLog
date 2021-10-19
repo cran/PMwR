@@ -1,11 +1,58 @@
+2021-10-19  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Version): 0.17-0
+
+2021-09-26  Enrico Schumann  <es@enricoschumann.net>
+
+        * man/returns.Rd: describe "ytd!" in docs
+
 2021-09-18  Enrico Schumann  <es@enricoschumann.net>
 
         * DESCRIPTION (Version): 0.16-1
+          [bug-fix release, built directly "on top" of
+           version 0.16-0]
 
         * R/position.R: convert to Date via as.POSIXlt(....).
         This fixes computing dates from timestamps in
         certain locales (timezones with large UTC offsets)
         in case the "when" keyword was used.
+
+2021-09-15  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/internal.R (.match_or_next): new argument
+        'fastmatch', with default FALSE
+        (.match_or_previous): new argument 'fastmatch',
+        with default FALSE
+
+2021-08-17  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/rebalance.R (print.rebalance): fix print
+        method for subsetting
+
+2021-08-13  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/rebalance.R (print.rebalance): do no longer
+        ignore 'multiplier' when computing values in
+        print method
+
+2021-07-07  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns): avoid warnings when
+        computing holding-period returns when 'period'
+        of is length greater than one
+
+2021-03-21  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/rc.R (rc): [experimental] 'rc' gains limited
+        support for attribution (currently for a single
+        period only); the function gains several arguments
+        for providing necessary information, such as 'R.bm'
+        and 'weights.bm'
+
+2021-02-22  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/returns.R (returns_position): warn if there
+        are NAs at rebalancing timestamps
 
 2021-01-19  Enrico Schumann  <es@enricoschumann.net>
 
@@ -3262,8 +3309,7 @@
 2013-10-23  Enrico Schumann  <es@enricoschumann.net>
 
         * R/internals.R (matchOrNext,matchOrPrevious): added
-        functions
-        (not exported)
+        functions (not exported)
 
 2013-10-22  Enrico Schumann  <es@enricoschumann.net>
 
