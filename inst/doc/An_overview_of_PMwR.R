@@ -9,15 +9,14 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 
 
 ###################################################
-### code chunk number 2: An_overview_of_PMwR.Rnw:42-45
+### code chunk number 2: An_overview_of_PMwR.Rnw:42-44
 ###################################################
 library("PMwR")
 library("zoo")
-try(tinytest::test_package("PMwR"), silent = TRUE)
 
 
 ###################################################
-### code chunk number 3: An_overview_of_PMwR.Rnw:65-74
+### code chunk number 3: An_overview_of_PMwR.Rnw:63-72
 ###################################################
 if (requireNamespace("tinytest")) {
     tinytest.results <- try(suppressMessages(
@@ -31,14 +30,15 @@ if (requireNamespace("tinytest")) {
 
 
 ###################################################
-### code chunk number 4: An_overview_of_PMwR.Rnw:99-101 (eval = FALSE)
+### code chunk number 4: An_overview_of_PMwR.Rnw:94-97 (eval = FALSE)
 ###################################################
 ## install.packages('PMwR',
-##                  repos = c('http://enricoschumann.net/R', getOption('repos')))
+##                  repos = c('http://enricoschumann.net/R',
+##                            getOption('repos')))
 
 
 ###################################################
-### code chunk number 5: An_overview_of_PMwR.Rnw:144-146 (eval = FALSE)
+### code chunk number 5: An_overview_of_PMwR.Rnw:142-144 (eval = FALSE)
 ###################################################
 ## utils::bug.report("[PMwR] Unexpected behaviour in function <XXX>",
 ##                   maintainer("PMwR"), package = "PMwR")
