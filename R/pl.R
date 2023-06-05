@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-20  Enrico Schumann
+## Copyright (C) 2008-22  Enrico Schumann
 
 pl <- function(amount, ...)
     UseMethod("pl")
@@ -42,23 +42,30 @@ print.pl <- function(x, ...,
     }
 
     for (i in seq_len(ni)) {
+
+        no.trades <- length(x[[i]]$volume) == 1 &&
+                            x[[i]]$volume  == 0L
+
         if (print.inst)
             cat(attr(x, "instrument")[[i]], "\n")
-        ## PL   <- if (any(is.finite(x[[i]]$pl)))
-        ##             x[[i]]$pl else na.print
-        ## BUY  <- if (any(is.finite(x[[i]]$buy)))
-        ##             x[[i]]$buy else na.print
-        ## SELL <- if (any(is.finite(x[[i]]$sell)))
-        ##             x[[i]]$sell else na.print
+
         PL   <- x[[i]]$pl
         BUY  <- x[[i]]$buy
         SELL <- x[[i]]$sell
-        w <- max(nchar(
-            c(as.character(prettyNum(c(PL, BUY, SELL,
-                                     x[[i]]$realised,
-                                     x[[i]]$unrealised))),
-              as.character(x[[i]]$timestamp))))
-        if (!is.null(x[[i]]$timestamp))
+
+        if (no.trades) {
+            BUY <- SELL <- "."
+            PL <- "0  <no trades>"
+            w <- 1
+        } else
+            w <- max(0,
+                     nchar(c(
+                         as.character(prettyNum(c(PL, BUY, SELL,
+                                                  x[[i]]$realised,
+                                                  x[[i]]$unrealised))),
+                         as.character(x[[i]]$timestamp))))
+
+        if (!is.null(x[[i]]$timestamp) && length(x[[i]]$timestamp))
             cat(indent,      "timestamp     ",
                 numrow(as.character(x[[i]]$timestamp), w),
                 "\n", sep = "")
@@ -99,6 +106,7 @@ pl.journal <- function(amount, multiplier = 1,
                        initial.position = NULL, initial.price = NULL,
                        vprice = NULL,
                        tol = 1e-10, do.warn = TRUE,...) {
+
     J <- amount
     price <- J$price
     instrument <- J$instrument
@@ -142,7 +150,7 @@ pl.default <- function(amount, price, timestamp = NULL,
     custom.timestamp <- FALSE
     if (isTRUE(along.timestamp)) {
 
-        if (is.null(timestamp) || all(is.na(timestamp)))
+        if (!length(timestamp) || all(is.na(timestamp)))
             timestamp <- seq_along(amount)
         else
             if (is.unsorted(timestamp)) {
@@ -152,6 +160,7 @@ pl.default <- function(amount, price, timestamp = NULL,
                 instrument <- instrument[io]
                 price <- price[io]
             }
+
     } else if (!identical(along.timestamp, FALSE)) {
 
         ## User-defined timestamp: vprice needs to be
@@ -179,6 +188,26 @@ pl.default <- function(amount, price, timestamp = NULL,
             vprice <- vprice[io, , drop = FALSE]
         }
     }
+
+    ## empty amount
+    if (!length(amount) && isTRUE(along.timestamp) &&
+        is.null(initial.position)) {
+        ans <- list(list(timestamp = numeric(0),
+                         pl = numeric(0),
+                         realised = numeric(0),
+                         unrealised = numeric(0),
+                         buy = numeric(0),
+                         sell = numeric(0),
+                         volume = 0))
+        class(ans) <- "pl"
+        attr(ans, "along.timestamp") <- along.timestamp
+        attr(ans, "instrument") <- NA
+        return(ans)
+    }
+
+
+
+
 
     ## initial position should be a named vector
     if (!is.null(initial.position)) {
@@ -300,7 +329,7 @@ pl.default <- function(amount, price, timestamp = NULL,
         amount1 <- amount[iv]
         price1 <- price[iv]
         if (!is.null(timestamp) && length(timestamp) > 0L)
-            timestamp1 <- timestamp[iv]
+            timestamp1 <- timestamp[iv] else timestamp1 <- numeric(0)
 
         vprice1 <- NA
         if (!is.null(vprice)  && is.null(dim(vprice)))
@@ -356,7 +385,8 @@ pl.default <- function(amount, price, timestamp = NULL,
 
             cumcash <- cumsum(-price1 * amount1)
             cumpos  <- cumsum(amount1)
-            real <- .pl_stats(amount1, price1)$realised
+            real <- if (length(amount1))
+                        .pl_stats(amount1, price1)$realised else 0
 
             if (isTRUE(along.timestamp)) {
 
@@ -459,7 +489,7 @@ pl.default <- function(amount, price, timestamp = NULL,
     open <- abs(sum(amount)) > tol
     if (open && do.warn)
         warning(sQuote("sum(amount)"),
-                " is not zero; cannot compute p/l.")
+                " is not zero; cannot compute p/l")
     i <- amount > 0
     c(if (open)
           NA

@@ -24,7 +24,7 @@ btest(prices, signal,
       variations, variations.settings, replications)
 }
 \arguments{
-  \item{prices}{
+  \item{prices}{%
 
     For a single asset, a matrix of prices with four
     columns: open, high, low and close. For \code{n}
@@ -50,7 +50,7 @@ btest(prices, signal,
     timestamps need not be provided).
 
   }
-  \item{signal}{
+  \item{signal}{%
 
     A function that evaluates to the position in units
     of the instruments suggested by the trading
@@ -61,7 +61,7 @@ btest(prices, signal,
     See Details.
 
   }
-  \item{do.signal}{
+  \item{do.signal}{%
 
     Logical or numeric vector, a function that
     evaluates to \code{TRUE} or \code{FALSE}, or a
@@ -83,135 +83,132 @@ btest(prices, signal,
     in these cases, \code{timestamp} needs to specified
     and must be coercable to \code{\link{Date}}.
 
-  }
-  \item{do.rebalance}{
-
-    Same as \code{do.signal}. Can also be the string
-    \code{"do.signal"}, in which case the value of
-    \code{do.signal} is copied.
-
-  }
-  \item{print.info}{
-
-    A function or \code{NULL}. If \code{NULL}, nothing
-    is printed.
+    If \code{timestamp} is specified, \code{do.signal} may
+    also be a vector of the same class as \code{timestamp}
+    (typically \code{\link{Date}} or \code{\link{POSIXct}}).
+    If the timestamps specified in \code{do.signal} do not
+    occur in \code{timestamp}, a signal is computed on the
+    next possible time instance.
 
   }
-  \item{cashflow}{
 
+  \item{do.rebalance}{%
+    Same as \code{do.signal}, but it may return a logical
+    vector of length equal to the number of assets, which
+    indicates which assets to rebalance. Can also be the
+    string \code{"do.signal"}, in which case the value of
+    \code{do.signal} is copied. \code{do.rebalance} is called
+    after signal computation, so it can access the suggested
+    position of the current period (via \code{SuggestedPortfolio(0)}.
+
+  }
+
+  \item{print.info}{%
+    A function, called at the very end of each period,
+    i.e. after rebalancing.  Can also be \code{NULL}, in
+    which case nothing is printed.
+  }
+
+  \item{cashflow}{%
     A function or \code{NULL} (default).
-
   }
-  \item{b}{
 
+  \item{b}{%
     burn-in (an integer). Defaults to 1. This may also
     be a length-one timestamp of the same class as
     \code{timestamp}, in which case the data up to (and
     including) \code{b} are skipped.
-
   }
-  \item{fraction}{
 
+  \item{fraction}{%
     amount of rebalancing to be done: a scalar between
     0 and 1
-
   }
-  \item{initial.position}{
 
+  \item{initial.position}{%
     a numeric vector: initial portfolio in units of
     instruments.  If supplied, this will also be the
     initial suggested position.
-
   }
-  \item{initial.cash}{
 
+  \item{initial.cash}{%
     a numeric vector of length 1. Defaults to 0.
-
   }
-  \item{final.position}{
 
+  \item{final.position}{%
     logical
-
   }
-  \item{tc}{
 
+  \item{tc}{%
     transaction costs as a fraction of turnover (e.g.,
     0.001 means 0.1\%). May also be a function that
     evaluates to such a fraction. More-complex
     computations may be specified with
     argument \code{cashflow}.
-
   }
-  \item{\dots}{
 
+  \item{\dots}{%
     other named arguments. All functions (signal,
     do.signal, do.rebalance, print.info, cashflow) will
     have access to these arguments. See Details for
     reserved argument names.
-
   }
-  \item{add}{
 
+  \item{add}{%
     Default is \code{FALSE}. \code{TRUE} is \strong{not
     implemented} -- but would mean that \code{signal}
     should evaluate to \emph{changes} in position,
     i.e. orders.
-
   }
-  \item{lag}{
 
+  \item{lag}{%
     default is 1
-
   }
-  \item{convert.weights}{
 
+  \item{convert.weights}{%
     Default is \code{FALSE}.  If \code{TRUE}, the value
     of signal will be considered a weight vector and
     automatically translated into (fractional) position
     sizes.
-
   }
-  \item{trade.at.open}{
 
+  \item{trade.at.open}{%
     A logical vector of length one; default is \code{TRUE}.
-
   }
-  \item{tol}{
 
+  \item{tol}{%
     A numeric vector of length one: only rebalance if
     the maximum absolute suggested change for at least
     one position is greater than \code{tol}. Default is
     0.00001 (which practically means always rebalance).
-
   }
-  \item{tol.p}{
 
+  \item{tol.p}{%
     A numeric vector of length one: only rebalance
     those positions for which the relative suggested
     change is greater than \code{tol.p}. Default is
     \code{\link{NA}}: always rebalance.
-
   }
-  \item{Globals}{
 
+  \item{Globals}{%
     A \code{list} of named elements. See Details.
 
   }
-  \item{prices0}{
+  \item{prices0}{%
 
     A numeric vector (default is \code{NULL}). Only
     used if \code{b} is 0 and an initial portfolio
     (\code{initial.position}) is specified.
 
   }
-  \item{include.data}{
+  \item{include.data}{%
 
     logical. If \code{TRUE}, all passed data are stored
     in final \code{btest} object. See Section
     Value. See also argument \code{include.timestamp}.
 
   }
-  \item{include.timestamp}{
+  \item{include.timestamp}{%
 
     logical. If \code{TRUE}, \code{timestamp} is stored
     in final \code{btest} object. If \code{timestamp}
@@ -220,30 +217,30 @@ btest(prices, signal,
     \code{include.data}.
 
   }
-  \item{timestamp}{
+  \item{timestamp}{%
 
     a vector of timestamps, along prices (optional; mainly used for
     print method and journal)
 
   }
-  \item{instrument}{
+  \item{instrument}{%
 
     character vector of instrument names (optional; mainly used for
     print method and journal)
 
   }
-  \item{progressBar}{
+  \item{progressBar}{%
     logical: display \code{\link{txtProgressBar}}?
   }
-  \item{variations}{
+  \item{variations}{%
      a list. See Details.
   }
 
-  \item{variations.settings}{
+  \item{variations.settings}{%
     a list. See Details.
   }
 
-  \item{replications}{
+  \item{replications}{%
 
     an integer. If set, the function returns a list of
     \code{btest} objects.  Each \code{btest} has an
@@ -263,7 +260,7 @@ btest(prices, signal,
   functions that map these series and other pieces of
   information into positions.
 
-  \subsection{How \code{btest} works}{
+  \subsection{How \code{btest} works}{%
 
     \code{btest} runs a loop from \code{b + 1} to
     \code{NROW(prices)}. In iteration \code{t}, a
@@ -294,17 +291,16 @@ btest(prices, signal,
     \code{SuggestedPortfolio}, \code{Globals}. Further
     reserved names may be added in the future:
     \strong{it is suggested to not start an argument
-    name with capital letter}.
+    name with a capital letter}.
 
     The function \code{signal} must evaluate to the
     target position in units of the instruments. To
     work with weights, set \code{convert.weights} to
     \code{TRUE}, and \code{btest} will translate the
     weights into positions.
-
   }
 
-  \subsection{Accessing data}{
+  \subsection{Accessing data}{%
 
     Within \code{signal} (and also other function
     arguments, such as \code{do.signal}), you can
@@ -331,7 +327,7 @@ btest(prices, signal,
 
   }
 
-  \subsection{Replications and variations}{
+  \subsection{Replications and variations}{%
 
     \code{btest} allows to run backtests in
     parallel. See the examples at
@@ -357,7 +353,8 @@ btest(prices, signal,
   \item{\code{wealth}}{time-series of total portfolio
     value (aka equity curve)}
   \item{\code{cum.tc}}{transaction costs}
-  \item{\code{journal}}{\code{\link{journal}} of trades}
+  \item{\code{journal}}{\code{\link{journal}} of trades.
+    Only includes trades done during the backtest, not initial positions.}
   \item{\code{initial.wealth}}{initial wealth}
   \item{\code{b}}{burn-in}
   \item{\code{final.position}}{final position if \code{final.position} is
@@ -377,7 +374,7 @@ btest(prices, signal,
 }
 \references{
 
-  Schumann, E. (2019) \emph{Portfolio Management
+  Schumann, E. (2023) \emph{Portfolio Management
     with R}. \url{http://enricoschumann.net/PMwR/};
   in particular the chapter on backtesting:
   \url{http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#backtesting}

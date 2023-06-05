@@ -1,19 +1,71 @@
+v0.19-1  (2023-06-05)
+
+  o the package now depends on R >= 3.3. That's because
+    the macro \doi{} is now used in the docs.  R 3.3
+    was released in 2016, so this requirement appears
+    not too unreasonable.
+
+  o functions ".expand" and ".tree" are no longer
+    exported, as they are used internally only
+
+  o the first argument of the (rarely-used) position
+    method of 'journal' (i.e. 'journal.position') is
+    now named 'amount', in alignment with the generic
+
+  o helper function '.pl_stats' is now documented
+
+  o various documentation updates.
+    See the ChangeLog for all details. The manual at
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
+    has also been updated.
+
+v0.19-0  (2023-05-31)
+
+  o Version 0.19 is intended be the last one before the
+    release of version 1.0.
+
+  o 'returns' gains an argument 'na.rm', currently with
+    default TRUE, which matches the current behaviour. In a
+    not-too-distant future version, the default will be
+    changed to FALSE.
+
+  o 'returns' supports timestamps of class 'yearqtr' and
+    'yearmon', as provided by the package 'zoo'
+
+  o 'btest': function 'do.rebalance' may now return a
+    logical vector with length equal to the number of
+    assets, indicating which assets to rebalance
+
+  o a transpose method is now defined for holding-period
+    'returns', for the (rare) case that a returns matrix is
+    to be transposed [before, this had required an explicit
+    conversion with as.matrix, and otherwise would have
+    resulted in an error]
+
+  o 'rc' ignores missing prices as along as
+    corresponding weights are zero
+
+  o various minor bug fixes and documentation updates.
+    See the ChangeLog for all details. The manual at
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
+    has also been updated.
+
 v0.18-0  (2022-10-19)
 
-  o [streaks] gains an argument "relative", with default
+  o 'streaks' gains an argument 'relative', with default
     TRUE, which is the current behaviour. If FALSE, the
     function looks at differences instead of relative
     changes (returns), which is useful, for instance, for
     interest rates. For an example, see
     http://enricoschumann.net/notes/streaks-in-equity-returns-and-yield-changes.html
 
-  o [btest]: rebalance arithmetic is performed only for
+  o 'btest': rebalance arithmetic is performed only for
     positions with non-zero change also in period 1,
-    i.e. in the rare case when burnin is 0, which
+    i.e. in the rare case when burn-in is 0, which
     allows NAs in prices. (For periods > 1, this
     behaviour had been introduced in version 0.10-0.)
 
-  o [position]: if 'when' is not specified, timestamps
+  o 'position': if 'when' is not specified, timestamps
     are now effectively ignored, even if they are NA
 
   o There is an additional public Git repository at
@@ -168,9 +220,9 @@ v0.14-0  (2020-03-11)
 v0.13-0  (2019-10-19)
 
   o 'btest': fix handling of initial position -- with
-    an initial position specified and burnin set to
+    an initial position specified and burn-in set to
     zero, the suggested position now equals the
-    initial position (as it does for a burnin greater
+    initial position (as it does for a burn-in greater
     than zero)
 
   o 'NAVseries': fix method, which did not work
@@ -377,7 +429,7 @@ v0.8-0  (2018-04-30)
     a numeric vector
 
   o btest: if a timestamp of class Date or POSIXct is
-    specified, burnin 'b' may be an actual timestamp
+    specified, burn-in 'b' may be an actual timestamp
 
   o rebalance: new argument 'current.weights' with
     default FALSE; if TRUE, the current portfolio is

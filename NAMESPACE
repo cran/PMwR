@@ -1,9 +1,12 @@
-importFrom(NMOF, drawdown)
-importFrom(NMOF, pm)
-importFrom(zoo, as.zoo)
-importFrom(zoo, coredata)
-importFrom(zoo, index)
-importFrom(zoo, zoo)
+importFrom("NMOF", "drawdown")
+importFrom("NMOF", "pm")
+
+importFrom("zoo",
+           as.zoo, as.Date.yearmon, as.Date.yearqtr,
+           coredata,
+           index,
+           zoo)
+
 importFrom(orgutils, toOrg)
 importFrom(textutils, strexp)
 importFrom(textutils, spaces)
@@ -33,11 +36,11 @@ importFrom("utils",
 importFrom(parallel, "clusterExport")
 
 export(
-    .expand,
+    ## .expand,
     .pl,
     .pl_stats,
     .returns,
-    .tree,
+    ## .tree,
     NAVseries,
     as.NAVseries,
     as.journal,
@@ -116,6 +119,7 @@ S3method(instrument, position)
 S3method(instrument, pricetable)
 S3method(journal, btest)
 S3method(journal, default)
+S3method(journal, position)
 S3method(length, journal)
 S3method(lines, btest)
 S3method(lines, NAVseries)
@@ -159,6 +163,7 @@ S3method(streaks, zoo)
 S3method(subset, journal)
 S3method(summary, NAVseries)
 S3method(summary, journal)
+S3method(t, p_returns)
 S3method(tail, journal)
 S3method(toHTML, p_returns)
 S3method(toHTML, p_returns_monthly)
