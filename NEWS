@@ -1,3 +1,30 @@
+v0.19-3  (2023-10-19)
+
+  o documentation updates.  In particular, many help pages
+    now have links to the revelant manual sections.
+    (The manual at
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
+    has also been updated.)
+
+v0.19-2  (2023-09-29)
+
+  o 'split_trades' gains an argument 'drop.zero', for
+    dropping zero-amount trades
+
+  o 'pl': fix a bug in printing in case of an initial
+    position but no trades in journal
+
+  o 'as.journal(<journal>)' now evaluates to <journal>
+    (instead of giving an error)
+
+  o the package now depends on R >= 3.5. R 3.5 was released
+    in 2018.
+
+  o various minor changes and documentation updates.
+    See the ChangeLog for all details. The manual at
+    http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html
+    has also been updated.
+
 v0.19-1  (2023-06-05)
 
   o the package now depends on R >= 3.3. That's because

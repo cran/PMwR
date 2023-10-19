@@ -1,7 +1,7 @@
 ### R code from vignette source 'Drawdowns_streaks.Rnw'
 
 ###################################################
-### code chunk number 1: Drawdowns_streaks.Rnw:25-28
+### code chunk number 1: Drawdowns_streaks.Rnw:24-27
 ###################################################
 options(continue = "  ", digits = 3, width = 60, useFancyQuotes = FALSE)
 pv <- packageVersion("PMwR")
@@ -9,7 +9,7 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 
 
 ###################################################
-### code chunk number 2: Drawdowns_streaks.Rnw:42-46
+### code chunk number 2: Drawdowns_streaks.Rnw:41-45
 ###################################################
 library("PMwR")
 library("zoo")
@@ -18,7 +18,7 @@ dax <- zoo(DAX[[1]], as.Date(row.names(DAX)))
 
 
 ###################################################
-### code chunk number 3: Drawdowns_streaks.Rnw:54-60
+### code chunk number 3: Drawdowns_streaks.Rnw:53-59
 ###################################################
 library("PMwR")
 library("zoo")
@@ -29,7 +29,7 @@ dd
 
 
 ###################################################
-### code chunk number 4: Drawdowns_streaks.Rnw:63-68
+### code chunk number 4: Drawdowns_streaks.Rnw:62-67
 ###################################################
 par(bty = "n", las = 1, tck = 0.01, 
     mar = c(3, 3, 1, 1), mgp = c(2, 0.5, 0), ps = 9)
@@ -39,14 +39,14 @@ abline(v = dd$trough[1])
 
 
 ###################################################
-### code chunk number 5: Drawdowns_streaks.Rnw:79-81
+### code chunk number 5: Drawdowns_streaks.Rnw:78-80
 ###################################################
 up_down <- streaks(dax, up = 0.1, down = -0.1)
 up_down
 
 
 ###################################################
-### code chunk number 6: Drawdowns_streaks.Rnw:91-114
+### code chunk number 6: Drawdowns_streaks.Rnw:90-113
 ###################################################
 par(bty = "n", 
     las = 1, 

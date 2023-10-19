@@ -21,20 +21,20 @@ rebalance(current, target, price,
 replace_weight(weights, ..., prefix = TRUE, sep = "::")
 }
 \arguments{
-  \item{current}{
+  \item{current}{%
     the current holdings: a (typically named) vector of position sizes;
     can also be a \code{position}
   }
-  \item{target}{
+  \item{target}{%
     the target holdings: a (typically named) vector of weights;
     can also be a \code{position}
   }
-  \item{price}{
-    the current prices
+  \item{price}{%
+    a numeric vector: the current prices; may be named
   }
-  \item{notional}{
-    the value of the portfolio; if missing, replaced by
-    \code{sum(current*prices)}
+  \item{notional}{%
+    a single number: the value of the portfolio; if missing,
+    replaced by \code{sum(current*prices)}
   }
   \item{multiplier}{
     numeric vector, possibly named
@@ -118,10 +118,12 @@ replace_weight(weights, ..., prefix = TRUE, sep = "::")
   \item{multiplier}{multipliers}
 
 }
-\references{
+\references{%
 
-  Schumann, E. (2018) \emph{Portfolio Management with
-    R}. \url{http://enricoschumann.net/R/packages/PMwR/}
+  Schumann, E. (2023) \emph{Portfolio Management with R}.
+  \url{http://enricoschumann.net/R/packages/PMwR/};
+  in particular, see\cr
+  \url{http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#rebalance}
 
 }
 \author{
