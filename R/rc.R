@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2023  Enrico Schumann
+## Copyright (C) 2023-24  Enrico Schumann
 
 rc <- function(R, weights, timestamp, segments = NULL,
                R.bm = NULL, weights.bm = NULL,
@@ -8,13 +8,13 @@ rc <- function(R, weights, timestamp, segments = NULL,
                allocation.minus.bm = TRUE,
                tol = sqrt(.Machine$double.eps)) {
 
-    if (missing(weights))
-        weights <- 1
-    else if (is.null(dim(weights)))
-        weights <- t(weights)
-
     if (is.null(dim(R)))
         R <- t(R)
+
+    if (missing(weights))
+        weights <- array(1, dim = dim(R))
+    else if (is.null(dim(weights)))
+        weights <- t(weights)
 
     if (is.null(segments)) {
 
@@ -37,11 +37,10 @@ rc <- function(R, weights, timestamp, segments = NULL,
     else if (anyDuplicated(timestamp))
         stop("duplicated timestamps")
     else if (is.unsorted(timestamp)) {
-        ## TODO make checks
         o <- order(timestamp)
-        timestamp <- timestamp(o)
         R <- R[o, ]
-        weights <- weights[o]
+        weights <- weights[o, ]
+        timestamp <- timestamp[o]
     }
 
     nt <- length(timestamp)
@@ -65,46 +64,83 @@ rc <- function(R, weights, timestamp, segments = NULL,
                      stringsAsFactors = FALSE)
     names(df) <- c("timestamp", segments, "total")
 
+
     if (method == "contribution") {
 
         if (is.null(linking.method))
+            linking.method <- "geometric1"
+        else if (linking.method == "1-cumulative")
+            linking.method <- "geometric1"
+        else if (linking.method == "0-cumulative")
             linking.method <- "geometric0"
 
-        if (linking.method == "geometric0") {
+        if (linking.method == "geometric1") {
 
-            later_r <- c(rev(cumprod(1 + rev(df[["total"]])))[-1], 1)
+            later_r <-
+                c(rev(cumprod(1 + rev(df[["total"]])))[-1], 1)
 
             total <- rep(NA_real_, ns + 1)
             names(total) <- c(segments, "total")
-            for (i in seq_len(ns))
-                total[[i]] <- sum(df[[i + 1]] * later_r)
+            ns1 <- seq_len(ns)
+            total[ns1] <- colSums(df[, ns1 + 1] * later_r)
             total[[ns + 1]] <- cumprod(df[["total"]] + 1)[[nt]] - 1
 
-        } else if (linking.method == "geometric1") {
+        } else if (linking.method == "geometric0") {
 
-            earlier_r <- c(1,
-                           cumprod(1 + df[["total"]][-nrow(df)]))
+            earlier_r <-
+                c(1, cumprod(1 + df[["total"]][-nrow(df)]))
 
             total <- rep(NA_real_, ns + 1)
             names(total) <- c(segments, "total")
-            for (i in seq_len(ns))
-                total[[i]] <- sum(df[[i + 1]] * earlier_r)
+            ns1 <- seq_len(ns)
+            total[ns1] <- colSums(df[, ns1 + 1] * earlier_r)
+            total[[ns + 1]] <- cumprod(df[["total"]] + 1)[[nt]] - 1
+
+        } else if (grepl("geometric", linking.method)) {
+            f <- 0.5
+            later_r <-
+                c(rev(cumprod(1 + rev(f*df[["total"]])))[-1], 1)
+            earlier_r <-
+                c(1,  cumprod(1 + (1-f)*df[["total"]][-nrow(df)]))
+
+            total <- rep(NA_real_, ns + 1)
+            names(total) <- c(segments, "total")
+            ns1 <- seq_len(ns)
+            total[ns1] <- colSums(df[, ns1 + 1] * earlier_r * later_r)
             total[[ns + 1]] <- cumprod(df[["total"]] + 1)[[nt]] - 1
 
         } else if (linking.method == "logarithmic") {
-            kt <- log(df[["total"]] + 1) / df[["total"]]
-            k <- prod(df[["total"]] + 1)
-            k <- log(k) / (k-1)
-            adj_ct <- df[, -c(1, ncol(df))]*kt
-            total <- colSums(adj_ct)/k
+            C <- df[, -c(1, ncol(df))]
+            total <- .linking_logarithmic(C,
+                                          r = df[["total"]],
+                                          b = 0)
+            adj_ct <- attr(total, "C.adj")
             total <- c(total, total = sum(total))
         }
         ans <- list(period_contributions = df,
                     total_contributions = total)
         attr(ans, "method") <- "contribution"
 
+    } else if (method %in% c("attribution")) {
+        r <- rowSums(R * weights)
+        b <- rowSums(R * weights.bm)
+
+        C <- (weights - weights.bm)*R
+        total <- .linking_logarithmic(C,
+                                      r = df[["total"]],
+                                      b = b)
+        adj_ct <- attr(total, "C.adj")
+        total <- c(total, total = sum(total))
+
+        ans <- list(period_contributions = C,
+                    total_contributions = total)
+
+        attr(ans, "method") <- "attribution"
+        attr(ans, "linking.method") <- "logarithmic"
+        attr(ans, "adjusted_period_contributions") <- adj_ct
+
     } else if (method %in%
-               c("attribution", "topdown", "bottomup")) {
+               c("topdown", "bottomup")) {
 
         if (!is.null(linking.method))
             .NotYetUsed("linking.method", FALSE)
@@ -205,4 +241,28 @@ rc <- function(R, weights, timestamp, segments = NULL,
         stop("unknown method")
 
     ans
+}
+
+.linking_logarithmic <- function(C, r, b = 0, ...) {
+
+    ## C .. matrix of contributions
+    ## r .. period returns of portfolio
+    ## b .. period returns of benchmark
+
+    rT <- prod(r + 1) - 1
+    bT <- prod(b + 1) - 1
+
+    kt <- log(1 + r) - log(1 + b)
+    inf <- is.infinite(kt)
+    kt <- kt / (r - b)
+    kt[inf] <- 1/(1 + r)
+
+    k  <- log(1 + rT) - log(1 + bT)
+    k <- k / (rT - bT)
+    k[is.infinite(k)] <- 1/(1 + rT)
+
+    C.adj <- C * kt / k
+    total <- colSums(C.adj)
+    attr(total, "adjusted") <- C.adj
+    total
 }

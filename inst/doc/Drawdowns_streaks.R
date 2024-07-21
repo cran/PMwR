@@ -31,7 +31,7 @@ dd
 ###################################################
 ### code chunk number 4: Drawdowns_streaks.Rnw:62-67
 ###################################################
-par(bty = "n", las = 1, tck = 0.01, 
+par(bty = "n", las = 1, tck = 0.01,
     mar = c(3, 3, 1, 1), mgp = c(2, 0.5, 0), ps = 9)
 plot(dax, xlab = "", ylab = "DAX")
 abline(v = dd$peak[1])
@@ -48,11 +48,11 @@ up_down
 ###################################################
 ### code chunk number 6: Drawdowns_streaks.Rnw:90-113
 ###################################################
-par(bty = "n", 
-    las = 1, 
-    tck = 0.01, 
+par(bty = "n",
+    las = 1,
+    tck = 0.01,
     mar = c(3, 3, 1, 1), mgp = c(2, 0.5, 0), ps = 9)
-plot(index(dax), rep(100, length(index(dax))), 
+plot(index(dax), rep(100, length(index(dax))),
      type = "n",
      main = "", xlab = "", ylab = "Streak in %",
      log = "y", ylim = range(100*up_down$return+100),
@@ -65,8 +65,8 @@ axis(2, lwd = 0, at = axTicks(2), labels = axTicks(2)-100)
 abline(h = 100, lwd = 0.5, col = grey(.5))
 abline(h = axTicks(2), col = grey(0.7), lwd = 0.25)
 
-for (i in seq_len(nrow(up_down))) {    
-    lines(scale1(window(dax, 
+for (i in seq_len(nrow(up_down))) {
+    lines(scale1(window(dax,
                         start = up_down$start[i],
                         end = up_down$end[i]),
                  level = 100))

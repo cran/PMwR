@@ -107,23 +107,25 @@ replace_weight(weights, ..., prefix = TRUE, sep = "::")
   \item{instrument}{character, or \code{NA} when
                     \code{match.names} is \code{FALSE}}
   \item{price}{prices}
-  \item{current}{current portfolio}
-  \item{target}{new portfolio}
-  \item{difference}{the difference between current and target}
+  \item{current}{current portfolio, in units of instrument}
+  \item{target}{new portfolio, in units of instrument}
+  \item{difference}{the difference between \code{current}
+    and target portfolio}
 
   Attached to the data.frame are several attributes:
 
-  \item{notional}{notional}
+  \item{notional}{a single number}
   \item{match.names}{logical}
-  \item{multiplier}{multipliers}
+  \item{multiplier}{a numeric vector with as many elements as
+    the resulting data.frame has rows}
 
 }
 \references{%
 
   Schumann, E. (2023) \emph{Portfolio Management with R}.
-  \url{http://enricoschumann.net/R/packages/PMwR/};
+  \url{https://enricoschumann.net/R/packages/PMwR/};
   in particular, see\cr
-  \url{http://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#rebalance}
+  \url{https://enricoschumann.net/R/packages/PMwR/manual/PMwR.html#rebalance}
 
 }
 \author{

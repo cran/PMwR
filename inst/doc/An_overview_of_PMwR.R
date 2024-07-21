@@ -33,7 +33,7 @@ if (requireNamespace("tinytest")) {
 ### code chunk number 4: An_overview_of_PMwR.Rnw:97-100 (eval = FALSE)
 ###################################################
 ## install.packages('PMwR',
-##                  repos = c('http://enricoschumann.net/R',
+##                  repos = c('https://enricoschumann.net/R',
 ##                            getOption('repos')))
 
 

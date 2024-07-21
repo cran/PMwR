@@ -69,6 +69,7 @@ rc(segments = c("large cap", "small cap", "fixed income"),
                 .55, .05, .4), byrow = TRUE, nrow = 3)[1, ],
    )
 
+
 ## -----------------------------
 ## Christopherson / Cari\~no 2009, Table 19.1
 ans <- rc(segments = c("stocks", "bonds"),
@@ -77,7 +78,7 @@ ans <- rc(segments = c("stocks", "bonds"),
           weights =
               matrix(c(50, 50,
                        55, 45)/100, byrow = TRUE, nrow = 2),
-          linking.method = "geometric0")
+          linking.method = "geometric1")
 expect_equal(ans$total_contributions[["total"]],  0.43125)
 expect_equal(ans$total_contributions[["stocks"]], 0.284)
 expect_equal(ans$total_contributions[["bonds"]],  0.14725)
@@ -88,7 +89,31 @@ ans <- rc(segments = c("stocks", "bonds"),
           weights =
               matrix(c(50, 50,
                        55, 45)/100, byrow = TRUE, nrow = 2),
-          linking.method = "geometric1")
+          linking.method = "geometric0")
+expect_equal(ans$total_contributions[["total"]],  0.43125)
+expect_equal(ans$total_contributions[["stocks"]], 0.26875)
+expect_equal(ans$total_contributions[["bonds"]],  0.1625)
+
+
+## same tests as before, but now with "0-cumulative" etc
+ans <- rc(segments = c("stocks", "bonds"),
+          R = matrix(c(40, 10,
+                       10, 20)/100, byrow = TRUE, nrow = 2),
+          weights =
+              matrix(c(50, 50,
+                       55, 45)/100, byrow = TRUE, nrow = 2),
+          linking.method = "1-cumulative")
+expect_equal(ans$total_contributions[["total"]],  0.43125)
+expect_equal(ans$total_contributions[["stocks"]], 0.284)
+expect_equal(ans$total_contributions[["bonds"]],  0.14725)
+
+ans <- rc(segments = c("stocks", "bonds"),
+          R = matrix(c(40, 10,
+                       10, 20)/100, byrow = TRUE, nrow = 2),
+          weights =
+              matrix(c(50, 50,
+                       55, 45)/100, byrow = TRUE, nrow = 2),
+          linking.method = "0-cumulative")
 expect_equal(ans$total_contributions[["total"]],  0.43125)
 expect_equal(ans$total_contributions[["stocks"]], 0.26875)
 expect_equal(ans$total_contributions[["bonds"]],  0.1625)
@@ -97,7 +122,6 @@ expect_equal(ans$total_contributions[["bonds"]],  0.1625)
 
 
 ## --------------------------------------------------------
-
 ## NAs in returns should not affect results as long as
 ## corresponding weights are zero
 
@@ -116,3 +140,28 @@ R2 <- rbind(c( 1  ,    NA),
 r2 <- rc(R2, weights, segment = c("equities", "bonds"))
 
 expect_true(all.equal(r1, r2))
+
+
+## -----------------------------
+## order by timestamp
+
+weights <- rbind(c( 0.25, 0.75),
+                 c( 0.40, 0.60))
+R <- rbind(c( 1  ,    0),
+           c( 2.5, -1.0))/100
+timestamp <- 1:2
+
+rc1 <- rc(R, weights, timestamp = timestamp,
+          segment = c("equities", "bonds"))
+
+weights <- weights[2:1, ]
+R <- R[2:1, ]
+timestamp <- 2:1
+rc2 <- rc(R, weights, timestamp = timestamp,
+          segment = c("equities", "bonds"))
+
+expect_equivalent(rc1$period_contributions,
+                  rc2$period_contributions)
+
+expect_equivalent(rc1$total_contributions,
+                  rc2$total_contributions)
