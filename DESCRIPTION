@@ -1,8 +1,8 @@
 Package: PMwR
 Type: Package
 Title: Portfolio Management with R
-Version: 0.19-5
-Date: 2024-07-21
+Version: 1.0-1
+Date: 2024-10-19
 Maintainer: Enrico Schumann <es@enricoschumann.net>
 Authors@R: person(given = "Enrico", family = "Schumann",
                   role  = c("aut", "cre"),
@@ -14,7 +14,7 @@ Description: Tools for the practical management of financial
   handling lists of transactions, reporting, and more.  The
   package provides a small set of reliable, efficient and
   convenient tools for processing and analysing
-  trade/portfolio data.  The Manual provides all the details;
+  trade/portfolio data.  The manual provides all the details;
   it is available from
   <https://enricoschumann.net/R/packages/PMwR/manual/PMwR.html>.
   Examples and descriptions of new features are provided at
@@ -32,7 +32,7 @@ URL: https://enricoschumann.net/PMwR/ ,
         https://gitlab.com/enricoschumann/PMwR ,
         https://github.com/enricoschumann/PMwR
 NeedsCompilation: no
-Packaged: 2024-07-21 13:20:31 UTC; es19
+Packaged: 2024-10-19 17:44:11 UTC; es19
 Author: Enrico Schumann [aut, cre] (<https://orcid.org/0000-0001-7601-6576>)
 Repository: CRAN
-Date/Publication: 2024-07-21 13:40:02 UTC
+Date/Publication: 2024-10-19 23:40:20 UTC

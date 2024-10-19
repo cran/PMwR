@@ -16,7 +16,7 @@ library("zoo")
 
 
 ###################################################
-### code chunk number 3: An_overview_of_PMwR.Rnw:65-74
+### code chunk number 3: An_overview_of_PMwR.Rnw:52-61
 ###################################################
 if (requireNamespace("tinytest")) {
     tinytest.results <- try(suppressMessages(
@@ -30,7 +30,7 @@ if (requireNamespace("tinytest")) {
 
 
 ###################################################
-### code chunk number 4: An_overview_of_PMwR.Rnw:97-100 (eval = FALSE)
+### code chunk number 4: An_overview_of_PMwR.Rnw:82-85 (eval = FALSE)
 ###################################################
 ## install.packages('PMwR',
 ##                  repos = c('https://enricoschumann.net/R',
@@ -38,7 +38,7 @@ if (requireNamespace("tinytest")) {
 
 
 ###################################################
-### code chunk number 5: An_overview_of_PMwR.Rnw:137-139 (eval = FALSE)
+### code chunk number 5: An_overview_of_PMwR.Rnw:122-124 (eval = FALSE)
 ###################################################
 ## utils::bug.report("[PMwR] Unexpected behaviour in function <XXX>",
 ##                   maintainer("PMwR"), package = "PMwR")
