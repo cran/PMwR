@@ -3,7 +3,7 @@
 ###################################################
 ### code chunk number 1: Computing_returns.Rnw:25-28
 ###################################################
-options(continue = "  ", digits = 3, width = 62, useFancyQuotes = FALSE)
+options(continue = "  ", digits = 3, width = 55, useFancyQuotes = FALSE)
 pv <- packageVersion("PMwR")
 pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 
