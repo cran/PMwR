@@ -66,13 +66,15 @@ replace_weight(weights, ..., prefix = TRUE, sep = "::")
   }
   \item{current.weights}{
     logical. If \code{TRUE}, the values in \code{current} are
-    interpreted as weights. If \code{FALSE}, \code{current} is
-    interpreted as a position (i.e. notional/number of contracts).
+    interpreted as weights. If \code{FALSE} (the default),
+    \code{current} is interpreted as a position (i.e.
+    notional/number of contracts).
   }
   \item{target.weights}{
-    logical. If \code{TRUE} (the default), the values in \code{target} are
-    interpreted as weights. If \code{FALSE}, \code{target} is
-    interpreted as a position (i.e. notional/number of contracts).
+    logical. If \code{TRUE} (the default), the values in
+    \code{target} are interpreted as weights. If \code{FALSE},
+    \code{target} is interpreted as a position (i.e.
+    notional/number of contracts).
   }
   \item{weights}{
     a numeric vector with named components
@@ -112,7 +114,8 @@ replace_weight(weights, ..., prefix = TRUE, sep = "::")
   \item{difference}{the difference between \code{current}
     and target portfolio}
 
-  Attached to the data.frame are several attributes:
+  Attached to the \code{\link{data.frame}} are several
+  attributes:
 
   \item{notional}{a single number}
   \item{match.names}{logical}
