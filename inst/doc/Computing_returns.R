@@ -92,5 +92,3 @@ toLatex(returns(DAX, period = "month"))
 ### code chunk number 14: Computing_returns.Rnw:141-142 (eval = FALSE)
 ###################################################
 ## vignette("FinTeX", package = "PMwR")
-
-

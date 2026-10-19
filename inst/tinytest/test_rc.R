@@ -1,5 +1,4 @@
 ## return contribution
-
 prices <- 1:10
 prices <- cbind(A = prices, B = prices + 0.5)
 signal <- function()
@@ -72,6 +71,16 @@ rc(segments = c("large cap", "small cap", "fixed income"),
 
 ## -----------------------------
 ## Christopherson / Cari\~no 2009, Table 19.1
+ans <- rc(segments = c("stocks", "bonds"),
+          R = matrix(c(40, 10,
+                       10, 20)/100, byrow = TRUE, nrow = 2),
+          weights =
+              matrix(c(50, 50,
+                       55, 45)/100, byrow = TRUE, nrow = 2),
+          linking.method = "sum")
+expect_equal(ans$total_contributions[["total"]],
+             sum(ans$period_contributions[, 2:3]))
+
 ans <- rc(segments = c("stocks", "bonds"),
           R = matrix(c(40, 10,
                        10, 20)/100, byrow = TRUE, nrow = 2),
@@ -234,7 +243,8 @@ R.bm <- matrix(c(-1.9,-5.3,-0.9,
 
 
 ans <- rc(R    = R,    weights = w,
-          R.bm = R.bm, weights.bm = w.bm)
+          R.bm = R.bm, weights.bm = w.bm,
+          method = "contribution")
 expect_equivalent(ans$period_contributions$total,
                   rowSums(R * w))
 
@@ -272,10 +282,57 @@ expect_equivalent(round(ans$interaction[, "total"], 4),
 
 
 ### three periods
-rc(R    = R,    weights = w,
-   R.bm = R.bm, weights.bm = w.bm,
-   method = "attribution",
-   segments = segments)
+res <- rc(R    = R,    weights = w,
+          R.bm = R.bm, weights.bm = w.bm,
+          method = "attribution",
+          segments = segments)
+
+#### ... total performance
+rp <- prod(1+rowSums(R    * w   )) -1
+rb <- prod(1+rowSums(R.bm * w.bm)) -1
+rp - rb
+
+## res$allocation[2, ]+
+## res$selection [2, ]+
+## res$interaction[2, ]
+
+
+ns <- length(segments)
+#### ... period _relative_ returns
+expect_equivalent(
+    rowSums(R    * w   ) - rowSums(R.bm * w.bm),
+    rowSums(cbind(res$allocation[ ,1:ns],
+                  res$selection[ ,1:ns],
+                  res$interaction[ ,1:ns])))
+
+
+## .carino1999(cbind(res$allocation[ ,-4],
+##                   res$selection[ ,-4],
+##                   res$interaction[ ,-4]),
+##             r = rowSums(R    * w   ),
+##             b = rowSums(R.bm * w.bm))
+
+ns <- length(segments)
+
+res.c <- PMwR:::.carino1999(cbind(res$allocation[ ,-4],
+                                  res$selection[ ,-4],
+                                  res$interaction[ ,-4]),
+                            r = rowSums(R    * w   ),
+                            b = rowSums(R.bm * w.bm))
+sum(res.c)
+rowSums(attr(res.c, "adjusted"))
+sum(rowSums(attr(res.c, "adjusted")))
+
+
+res <- rc(R    = R,    weights = w,
+          R.bm = R.bm, weights.bm = w.bm,
+          method = "attribution",
+          segments = segments,
+          linking.method = "carino1999")
+
+
+
+
 
 
 
@@ -294,3 +351,429 @@ b <- c(0.0, 0.2, 0.3, 0.1, 0.4)
 rc(R = t(r),
    weights = t(w),
    segments = seg)
+
+
+
+
+##
+na <- 3
+nt <- 20
+W <- array(NA, dim = c(nt, na))
+colnames(W) <- letters[seq_len(ncol(W))]
+B <- W
+
+for (i in 1:nrow(W)) {
+    w <- sample(seq(0.1, 0.45, by = 0.05), 2)
+    W[i, ] <- w <- c(w, 1 - sum(w))
+
+    w <- sample(seq(0.1, 0.45, by = 0.05), 2)
+    B[i, ] <- w <- c(w, 1 - sum(w))
+}
+
+R <- sample(seq(-0.05, 0.05, by = 0.01), size = length(W), replace = TRUE)
+dim(R) <- dim(W)
+
+.carino1999 <- function(C, r, b = 0, ...) {
+
+    ## C .. matrix of contributions (or 'attributes')
+    ## r .. period returns of portfolio
+    ## b .. period returns of benchmark
+
+    rT <- prod(r + 1) - 1
+    bT <- prod(b + 1) - 1
+
+    kt <- log(1 + r) - log(1 + b)
+    inf <- is.infinite(kt)
+    kt <- kt / (r - b)
+    kt[inf] <- 1/(1 + r)
+
+    k  <- log(1 + rT) - log(1 + bT)
+    k <- k / (rT - bT)
+    k[is.infinite(k)] <- 1/(1 + rT)
+
+    C.adj <- C * kt / k
+    total <- colSums(C.adj)
+    attr(total, "adjusted") <- C.adj
+    total
+}
+
+C <- (W - B) * R
+r <- rowSums(W*R)
+b <- rowSums(B*R)
+a <- .carino1999(C, r, b)
+sum(a)
+
+prod(1+r) - prod(1+b)
+
+
+#########
+
+w <- c(0.4, 0.6)
+r <- c(0.1, 0.2)
+rc(R = r, weights = w)
+
+w*r
+
+## --
+
+w <- c(0.4, 0.6)
+r <- c(0.1, 0.2)
+rc(R = as.matrix(r), weights = as.matrix(w))
+
+cumprod(1+w*r)
+
+## --
+
+w <- rbind(c(0.4, 0.6),
+           c(0.1, 0.9))
+r <- rbind(c(0.1, 0.2),
+           c(0.1, -0.1))
+
+rc(R = r, weights = w)
+rowSums(w*r)
+(w*r)[, 1]
+(w*r)[, 2]
+cumprod(1 + rowSums(w*r))
+
+## --
+
+w <- c(0.5)
+r <- c(0.1)
+rc(R = r, weights = w)
+rc(R = as.matrix(r), weights = as.matrix(w))
+rc(R = t(r), weights = t(w))
+
+
+
+
+## Brinson
+w   <- c(0.3, 0.7)
+r   <- c(0.1, 0.2)
+r.b <- c(0.1, 0.1)
+w.b <- c(0.5, 0.5)
+rc(R = r, weights = w)
+
+rc(R = rbind(r, r),
+   weights    = rbind(w, w),
+   weights.bm = rbind(w.b, w.b),
+   R.bm       = rbind(r.b, r.b),
+   method = "attribution")
+
+rc(R = rbind(r, r),
+   weights    = rbind(w, w),
+   weights.bm = rbind(w.b, w.b),
+   R.bm       = rbind(r.b, r.b),
+   method = "attribution",
+   linking.method = "logarithmic")
+
+
+
+## contribution: (i) base effect: contributions
+## "enlarged" by previous portfolio return
+## [0-cumulative]
+
+w <- rbind(c(0.4, 0.6),
+           c(0.1, 0.9),
+           c(0.5, 0.5))
+r <- rbind(c(0.1,  0.2),
+           c(0.1, -0.1),
+           c(0.1,  0.1))
+
+C <- w*r
+tr <- cumprod(1 + rowSums(w*r))
+
+
+f <- c(1, tr)[-(nrow(w)+1)]  ## earlier
+C * f
+cumsum(rowSums(C * f))
+sum(colSums(C * f))
+
+.cumulative0 <- function(C, r, b = 0, ...) {
+    tr <- cumprod(1 + r)
+    f <- c(1, tr[-length(tr)])  ## earlier
+    C * f
+}
+
+C <- w*r
+## debug(.cumulative0)
+res0 <- .cumulative0(C, r = rowSums(C))
+cumsum(rowSums(res0))
+
+
+## contribution: (ii) contributions "invested" in
+## portfolio  [1-cumulative]
+
+tr <- rowSums(w*r)
+f <- c(rev(cumprod(1 + rev(tr)))[-1], 1)  ## later
+C * f
+cumsum(rowSums(C * f))
+sum(colSums(C * f))
+
+
+.cumulative1 <- function(C, r, b = 0, ...) {
+    f <- c(rev(cumprod(1 + rev(r)))[-1], 1)
+    ans <- C * f
+    ans
+}
+
+.cumulative1b <- function(C, r, b = 0, ...) {
+
+    if (nrow(C) == 1L)
+        return(C)
+
+    i <- seq.int(from = length(r), to = 1, by = -1)
+    f <- c(cumprod(1 + r[i])[i][-1L], 1)
+    C * f
+}
+
+
+
+
+
+C. <- rbind(C,C,C,C,C,C,C,C,C,C)
+r. <- c(rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r),
+        rowSums(w*r))
+
+## benchmark(
+##     .cumulative1(C., r = r.),
+##     .cumulative1b(C., r = r.),
+##     replications = 5000, order = "relative")
+
+
+identical(.cumulative1(C., r = r.), .cumulative1b(C., r = r.))
+
+
+r <- rbind(c(0.1,  0.2),
+           c(0.1, -0.1),
+           c(0.1,  0.1))
+w <- rbind(c(0.4, 0.6),
+           c(0.1, 0.9),
+           c(0.5, 0.5))
+w.b <- rbind(c(0.5, 0.5),
+             c(0.3, 0.7),
+             c(0.7, 0.3))
+
+C <- (w - w.b)*r
+## b <- rowSums(w.b*r)
+## R <- rowSums(w  *r)
+
+.cumulativex <- function(C, r, b = 0, x = 0, ...) {
+
+    R <- cumprod(1 + r) - 1
+    B <- cumprod(1 + b) - 1
+
+    rb <- r - b
+    RB <- R - B
+
+    n <- nrow(C)
+    A <- array(NA, dim = dim(C))
+
+    A[1, ] <- C[1, ]
+
+    if (n > 1L) {
+        for (i in 2:n) {
+            A[i, ] <- A[i - 1, ]* (1 + b[i] +        x  * rb[i]) +
+                      C[i,     ]* (1 + B[i-1] + (1 - x) * RB[i-1])
+        }
+    }
+
+    A
+
+}
+
+
+## debug(.cumulativex2)
+res1 <- .cumulativex(C,
+                    r = rowSums(w  *r),
+                    b = rowSums(w.b*r),
+                    x = 0)
+
+res1
+sum(res1[nrow(res1), ])
+prod(1+rowSums(w  *r)) - prod(1+rowSums(w.b*r))
+
+
+
+
+
+
+
+
+r <- rbind(c(0.2,  0.1),
+           c(0.1, -0.1),
+           c(0.1,  0.1))
+w <- rbind(c(0.4, 0.6),
+           c(0.1, 0.9),
+           c(0.5, 0.5))
+w.b <- rbind(c(0.5, 0.5),
+             c(0.3, 0.7),
+             c(0.7, 0.3))
+
+C <- (w - w.b)*r
+
+res <- PMwR:::.linking_logarithmic(
+                  C,
+                  r = rowSums(r*w),
+                  b = rowSums(r*w.b))
+
+cumprod(1+rowSums(r*w)) - cumprod(1+rowSums(r*w.b))
+
+   prod(1+rowSums(r*w)) -    prod(1+rowSums(r*w.b))
+
+res[1] + res[2]
+
+
+tmp <- apply(attr(res, "adjusted"), 2, cumsum)
+rowSums(tmp)
+
+
+
+
+
+
+
+##
+
+w <- c( 0.1, 0.5, 0.4)
+R <- c(-0.1, 0.1, 0.2)
+segments <- c("Equity", "Equity", "Bonds")
+res <- rc(R, w, segments = segments)
+tapply(w*R, segments, sum)
+
+sum(w[1:2]*R[1:2])/sum(w[1:2]) * sum(w[1:2]) +
+    sum(w[3]*R[3])/sum(w[3]) * sum(w[3])
+
+
+
+#######################################################
+. <- function(x) {
+    matrix(byrow = TRUE, ncol = 3, x)
+}
+
+w    <- .(c(0.1, 0.3, 0.6,
+         0.3, 0.2, 0.5))
+
+w.bm <- .(c(0.3, 0.3, 0.4,
+            0.2, 0.2, 0.6))
+
+segment <- c("equity", "equity", "bonds")
+R <- .(c(-0.1, 0.0, 0.05,
+          0.2, 0.1, 0.0))
+colnames(R) <- colnames(w) <- colnames(w.bm) <- segments
+
+### contributions
+rc(R = R*w)
+expect_equivalent(rc(R = R*w)$period_contributions$total,
+                  rowSums(R*w))
+
+### returns
+rc(R = R, weights = w)
+expect_equivalent(rc(R = R, weights = w)$period_contributions$total,
+                  rowSums(R*w))
+
+### active returns
+expect_equivalent(
+    rowSums(sapply(rc(R = R,
+                      weights = w,
+                      weights.bm = w.bm)[c("allocation",
+                                           "selection",
+                                           "interaction")],
+                   function(x) x[, "total"])),
+    rowSums(R*(w - w.bm)))
+
+
+
+### running difference of portfolio return and benchmark return
+cumprod(1+rowSums(R*(w))) - cumprod(1+rowSums(R*(w.bm)))
+
+rb <- (cumprod(1+rowSums(R*(w))) - cumprod(1+rowSums(R*(w.bm))))[2]
+
+### ... the final values must match the sum of
+###     contributions under carino
+expect_equivalent(
+    sum(.carino1999(R*(w - w.bm),
+                    r = rowSums(R*w),
+                    b = rowSums(R*w.bm))),
+    rb)
+
+
+rc(R = R, weights = w, weights.bm = w.bm)
+
+ans <- rc(R = R, weights = w, weights.bm = w.bm,
+          linking.method = "Carino1999")
+expect_equivalent(ans[["total"]][["total"]], rb)
+
+
+rc(R = R, weights = w, weights.bm = w.bm, segments = 1:3)
+
+
+
+### more periods
+
+w2    <- rbind(w,  w)
+w.bm2 <- rbind(w.bm, w.bm)
+R2 <- rbind(R, R)
+
+r <- rowSums(w2*R2)
+r.bm <- rowSums(w.bm2*R2)
+
+C <- w2*R2 - w.bm2*R2
+
+
+i <- seq.int(from = length(r), to = 1, by = -1)
+
+## postmultiply with bm
+f1 <- c(cumprod(1 + r.bm[i])[i][-1L], 1)
+## premultiply with r
+f2 <- c(1, cumprod(1 + r[-length(r)]))
+
+cumsum(rowSums(C*f1*f2))
+cumprod(1+r) - cumprod(1+r.bm)
+
+## postmultiply with bm
+f1 <- c(cumprod(1 + r[i])[i][-1L], 1)
+## premultiply with r
+f2 <- c(1, cumprod(1 + r.bm[-length(r.bm)]))
+
+cumsum(rowSums(C*f1*f2))
+cumprod(1+r) - cumprod(1+r.bm)
+
+
+
+###################
+
+
+C <- matrix(c(0.5, 0,
+              0, 0.5,
+              0.5, 0), byrow = TRUE, ncol = 2)
+PMwR:::.linking_cumulative0(C, r = c(0.5, 0.5, 0.5))
+PMwR:::.linking_cumulative1(C, r = c(0.5, 0.5, 0.5))
+PMwR:::.linking_cumulativex(C, r = c(0.5, 0.5, 0.5), x = .5)
+sum(PMwR:::.carino1999(C, r = c(0.5, 0.5, 0.5)))
+apply(PMwR:::.linking_cumulativex(C, r = c(0.5, 0.5, 0.5), x = .0), 2, cumsum)
+
+apply(exp(attr(.carino1999(C, r = c(0.5, 0.5, 0.5), geometric = TRUE), "adjusted")), 1, prod)
+
+
+rc(C, linking.method = "0-cumulative")
+rc(C, linking.method = "1-cumulative")
+rc(C, linking.method = "geometric(0.5)")
+
+
+C <- matrix(c(0.5, 0,
+              0, 0.5), byrow = TRUE, ncol = 2)
+PMwR:::.linking_cumulative0(C, r = c(0.5, 0.5))
+PMwR:::.linking_cumulative1(C, r = c(0.5, 0.5))
+PMwR:::.linking_cumulativex(C, r = c(0.5, 0.5), x = .5)
+
+
+
+

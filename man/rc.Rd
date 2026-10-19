@@ -13,7 +13,8 @@ rc(R, weights, timestamp, segments = NULL,
    method = "contribution",
    linking.method = NULL,
    allocation.minus.bm = TRUE,
-   tol = sqrt(.Machine$double.eps))
+   tol = sqrt(.Machine$double.eps),
+   options = list())
 }
 \arguments{
   \item{R}{%
@@ -33,17 +34,21 @@ rc(R, weights, timestamp, segments = NULL,
   }
 
   \item{method}{%
-    a string; default is \code{contribution}, and also
-    supported are \code{attribution}, \code{bottomup} or
+    a string: default is \code{contribution}; also
+    supported are \code{attribution}, \code{bottomup} and
     \code{topdown}
   }
 
   \item{linking.method}{%
 
-    \code{NULL} or a string. Currently supported are
-    \code{0-cumulative, 1-cumulative, 0.5-cumulative}
-    (\code{geometric{0,1,0.5}}) and \code{logarithmic}. See
-    Examples.
+    \code{NULL} or a string. Supported are \code{sum}, for which
+    period contributions are added without any linking;
+    \code{0-cumulative}, \code{1-cumulative}, \code{0.5-cumulative}
+    (Valtonen, 2002); and \code{logarithmic} (Cari\enc{ñ}{n}o, 1999).
+    For \sQuote{\code{attribution}}, only method \code{logarithmic}
+    is available. For \sQuote{\code{contribution}}, \code{NULL} is
+    equivalent to \code{1-cumulative}. For \sQuote{\code{attribution}},
+    \code{NULL} is equivalent to \code{logarithmic}.
 
   }
 
@@ -65,31 +70,75 @@ rc(R, weights, timestamp, segments = NULL,
     the benchmark weights of segments: a numeric matrix.
     \code{weights.bm[i, j]} must correspond to \code{R.bm[i, j]}
   }
+  \item{options}{%
+    a list of options; currently not used
+  }
 }
 \details{%
 
-  The function computes segment contribution, potentially
+  The function computes segment contributions, potentially
   over time.  Returns and weights must be arranged in
   matrices, with rows corresponding to time periods and
   columns to portfolio segments.  If \code{weights} and
   \code{R} are atomic vectors, then they are interpreted as
   cross-sectional weights/returns for a single period,
-  i.e. they are handled like row vectors.
+  i.e. they are handled like single-row matrices.
 
-  Weights can be missing, in which case \code{R} is assumed
-  to already comprise segment returns.
+  For method \code{contribution}, weights can be missing, in
+  which case \code{R} is assumed to already comprise segment
+  returns (i. e. contributions).
 
   Note that the segment contributions need not come from
   asset classes; the computation works for any additive
   single-period decomposition of portfolio returns.
+
+
+  \subsection{Multi-period linking}{
+
+    For contribution, in the terminology of Valtonen (2002),
+    \code{1-cumulative} means that contributions in one
+    period are re-invested in the overall portfolio after
+    that period. So for positive overall portfolio returns,
+    \emph{early} contributions count more since they get
+    compounded by the portfolio return. \code{0-cumulative}
+    means that contributions in one period are increased by
+    previous portfolio returns (i.e. contributions reflect a
+    base effect). For positive overall portfolio returns,
+    \emph{later} contributions count more since they are
+    earned on top of an increased portfolio value.
+    \code{0.5-cumulative} averages both effects. Valtonen shows
+    that \code{0.5-cumulative} is practically equivalent to the
+    method described in Cari\enc{ñ}{n}o (1999).
+
+    For method attribution, currently only the method of
+    Cari\enc{ñ}{n}o (1999) is supported.
+
+  }
 
 }
 \value{%
 
   For method \code{contribution}, a list of two components:
   \item{period_contributions}{a data.frame of single-period
-   contributions, sorted in time}
- \item{total_contributions}{a numeric vector}
+    contributions, sorted in time, with an additional column
+    "\code{total}"}
+  \item{total_contributions}{a numeric vector with the total
+    contributions per segment, and an additional element
+    "\code{total}"}
+
+  For method \code{attribution}, a list of four components:
+  \item{allocation}{a data.frame of single-period
+    contributions, sorted in time, with an additional column
+    "\code{total}"}
+  \item{selection}{a data.frame of single-period
+    contributions, sorted in time, with an additional column
+    "\code{total}"}
+  \item{interaction}{a data.frame of single-period
+    contributions, sorted in time, with an additional column
+    "\code{total}"}
+  \item{total}{a numeric vector with the total
+    contributions for allocation, selection and interaction,
+    and an additional element "\code{total}"}
 
 }
 \references{
@@ -148,7 +197,7 @@ R <- cbind(stocks = c(.4, 0.1),
 ## [2,]    0.1   0.2
 
 ## ==> contributions grow at portfolio rate-of-return
-rc(R, weights, linking.method =  "geometric1")
+rc(R, weights, linking.method =  "1-cumulative")
 
 ## ==> contributions are made on top of current portfolio-value
 rc(R, weights, linking.method =  "geometric0")
@@ -168,16 +217,16 @@ weights <- rbind(c( 0.5, 0.5),
                  c( 0.5, 0.5))
 
 R <- rbind(c( 10,   0),
-           c( 0 ,  10))/100
+           c(  0,  10))/100
 
 
 rc(R, weights, segment = c("F1", "F2"), timestamp = 1:2,
-   linking.method = "geometric1")
+   linking.method = "1-cumulative")
 ## ==> F1 contributed first, and so gets a higher total
 ##     contribution
 
 rc(R, weights, segment = c("F1", "F2"), timestamp = 1:2,
-   linking.method = "geometric0")
+   linking.method = "0-cumulative")
 ## ==> F2 contributed later, and so gets a higher total
 ##     contribution because it started off a higher base
 ##     value

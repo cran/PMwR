@@ -71,5 +71,3 @@ for (i in seq_len(nrow(up_down))) {
                         end = up_down$end[i]),
                  level = 100))
 }
-
-

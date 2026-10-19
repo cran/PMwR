@@ -107,5 +107,3 @@ s <- toLatex(do.call(summary, Plist),
 o <- order(P[nrow(P), ], decreasing = TRUE)
 s <- s[o]
 cat(toLatex(as.data.frame(matrixify(s, 3))))
-
-

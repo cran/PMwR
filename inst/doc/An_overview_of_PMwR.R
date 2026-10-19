@@ -1,7 +1,7 @@
 ### R code from vignette source 'An_overview_of_PMwR.Rnw'
 
 ###################################################
-### code chunk number 1: An_overview_of_PMwR.Rnw:26-29
+### code chunk number 1: An_overview_of_PMwR.Rnw:25-28
 ###################################################
 options(continue = "  ", digits = 3, width = 60, useFancyQuotes = FALSE)
 pv <- packageVersion("PMwR")
@@ -9,14 +9,14 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 
 
 ###################################################
-### code chunk number 2: An_overview_of_PMwR.Rnw:43-45
+### code chunk number 2: An_overview_of_PMwR.Rnw:42-44
 ###################################################
 library("PMwR")
 library("zoo")
 
 
 ###################################################
-### code chunk number 3: An_overview_of_PMwR.Rnw:52-61
+### code chunk number 3: An_overview_of_PMwR.Rnw:51-60
 ###################################################
 if (requireNamespace("tinytest")) {
     tinytest.results <- try(suppressMessages(
@@ -30,7 +30,7 @@ if (requireNamespace("tinytest")) {
 
 
 ###################################################
-### code chunk number 4: An_overview_of_PMwR.Rnw:82-85 (eval = FALSE)
+### code chunk number 4: An_overview_of_PMwR.Rnw:81-84 (eval = FALSE)
 ###################################################
 ## install.packages('PMwR',
 ##                  repos = c('https://enricoschumann.net/R',
@@ -38,9 +38,7 @@ if (requireNamespace("tinytest")) {
 
 
 ###################################################
-### code chunk number 5: An_overview_of_PMwR.Rnw:122-124 (eval = FALSE)
+### code chunk number 5: An_overview_of_PMwR.Rnw:121-123 (eval = FALSE)
 ###################################################
 ## utils::bug.report("[PMwR] Unexpected behaviour in function <XXX>",
 ##                   maintainer("PMwR"), package = "PMwR")
-
-

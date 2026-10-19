@@ -46,5 +46,3 @@ pl(j, vprice = P,
    along.timestamp = 1:3)
 pl(j, vprice = P,
    along.timestamp = 1:3, do.sum = TRUE)
-
-

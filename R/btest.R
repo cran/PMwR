@@ -1,5 +1,5 @@
 ## -*- truncate-lines: t; -*-
-## Copyright (C) 2008-24  Enrico Schumann
+## Copyright (C) 2008-22  Enrico Schumann
 
 btest  <- function(prices,
                    signal,
